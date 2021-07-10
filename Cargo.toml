@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "mdl",
+    "debug_parse",
+]
