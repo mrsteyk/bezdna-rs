@@ -3,6 +3,8 @@ use std::io::{Read, Seek, SeekFrom, Write};
 
 use crate::util;
 
+use crate::model::StudioModel;
+
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct StudioBodyPartT {
@@ -20,7 +22,7 @@ pub struct StudioBodyPart {
     pub base: u32,
 
     // TODO: change to models
-    pub models: Vec<u32>,
+    pub models: Vec<StudioModel>,
 }
 
 impl StudioBodyPart {
@@ -35,13 +37,14 @@ impl StudioBodyPart {
         let base = cursor.read_u32::<LE>()?;
         let model_index = cursor.read_u32::<LE>()?;
 
-        let models: Vec<u32> = Vec::new();
+        let mut models: Vec<StudioModel> = Vec::new();
 
         for i in 0..num_models {
             // read shit?
             cursor.seek(SeekFrom::Start(
                 start_reading + model_index as u64 + (i * 0x94) as u64,
             ))?;
+            models.push(StudioModel::read(cursor)?);
         }
 
         let name: String;

@@ -1,3 +1,5 @@
+type DescType = (u32, i32);
+
 // repr(C) will allow for easier reading in the future hopefully...
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -23,30 +25,30 @@ pub struct StudioHdrT {
 
     //numbones: u32, // 0xa0
     //boneindex: u32, // 0xa4
-    pub bone_desc: (u32, i32),
+    pub bone_desc: DescType,
 
     //numbonecontrollers: u32, // 0xa8
     //bonecontrollerindex: u32, // 0xac
-    pub bone_controller_desc: (u32, i32),
+    pub bone_controller_desc: DescType,
 
     //numhitboxsets: u32, // 0xB0
     //hitboxsetindex: u32, // 0xB4
-    pub hitbox_set_desc: (u32, i32),
+    pub hitbox_set_desc: DescType,
 
     //numlocalanim: u32, // 0xB8
     //localanimindex: u32, // 0xBC
-    pub local_anim_desc: (u32, i32),
+    pub local_anim_desc: DescType,
 
     //numlocalseq: u32, // 0xC0
     //localseqindex: u32, // 0xC4
-    pub local_seq_desc: (u32, i32),
+    pub local_seq_desc: DescType,
 
     pub activitylistversion: u32, // 0xC8
     pub eventsindexed: u32,       // 0xCC
 
     //numtextures: u32, // 0xD0
     //textureindex: u32, // 0xD4
-    pub texture_desc: (u32, i32),
+    pub texture_desc: DescType,
 
     // TODO: find out what that is...
     pub numcdtextures: u32,  // 0xD8
@@ -58,7 +60,9 @@ pub struct StudioHdrT {
 
     //numbodyparts: u32, // 0xEC
     //bodypartindex: u32, // 0xF0 - offset
-    pub body_part_desc: (u32, i32),
+    pub body_part_desc: DescType,
+
+    pub local_attachment_desc: DescType, // 0xF4, 0xF8
 
     pub const_directional_light_dot: u8, // 0x164
     // -- skip to 0x165
@@ -68,8 +72,9 @@ pub struct StudioHdrT {
     // -- skip to 0x17c
     pub maya_name_index: u32, // 0x17c ???
 
+    pub texture_file_offset: u32, // 0x1ac ???
     // -- skip to 0x1b0
-    pub vertex_file_offset: u32, // 0x1b0 ???
+    pub vertex_file_offset: u32, // 0x1b0
 }
 
 impl Default for StudioHdrT {

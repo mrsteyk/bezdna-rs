@@ -16,23 +16,36 @@ mod bone;
 pub use bone::StudioBone;
 use bone::StudioBoneT;
 
+mod attachment;
+pub use attachment::StudioAttachment;
+use attachment::StudioAttachmentT;
+
+mod model;
+pub use model::StudioModel;
+use model::StudioModelT;
+
+mod mesh;
+pub use mesh::StudioMesh;
+use mesh::StudioMeshT;
+
 mod util;
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct StudioModel {
+pub struct StudioMdl {
     header: (StudioHdrT, u64),
 
     // Parsed data
     pub body_parts: Vec<StudioBodyPart>,
     pub hitbox_sets: Vec<StudioHitboxSet>,
     pub bones: Vec<StudioBone>,
+    pub local_attachments: Vec<StudioAttachment>,
 }
 
-impl StudioModel {
+impl StudioMdl {
     // TODO: better Error handling?...
     pub fn read<R: Read + Seek + ReadBytesExt>(
         cursor: &mut R,
-    ) -> std::result::Result<StudioModel, std::io::Error> {
+    ) -> std::result::Result<StudioMdl, std::io::Error> {
         let mut hdr: StudioHdrT = Default::default();
 
         let start_reading = cursor.stream_position()?;
@@ -95,6 +108,9 @@ impl StudioModel {
         hdr.body_part_desc.0 = cursor.read_u32::<LE>()?;
         hdr.body_part_desc.1 = cursor.read_i32::<LE>()?;
 
+        hdr.local_attachment_desc.0 = cursor.read_u32::<LE>()?;
+        hdr.local_attachment_desc.1 = cursor.read_i32::<LE>()?;
+
         // SKIP TO 0x164
         cursor.seek(SeekFrom::Start(start_reading + 0x164))?;
         hdr.const_directional_light_dot = cursor.read_u8()?;
@@ -105,8 +121,9 @@ impl StudioModel {
         cursor.seek(SeekFrom::Start(start_reading + 0x17c))?;
         hdr.maya_name_index = cursor.read_u32::<LE>()?;
 
-        // SKIP TO 0x1b0
-        cursor.seek(SeekFrom::Start(start_reading + 0x1b0))?;
+        // SKIP TO 0x1ac
+        cursor.seek(SeekFrom::Start(start_reading + 0x1ac))?;
+        hdr.texture_file_offset = cursor.read_u32::<LE>()?;
         hdr.vertex_file_offset = cursor.read_u32::<LE>()?;
 
         // TODO: parse body parts and shit...
@@ -135,12 +152,21 @@ impl StudioModel {
             bones.push(StudioBone::read(cursor)?);
         }
 
-        Ok(StudioModel {
+        let mut local_attachments: Vec<StudioAttachment> = Vec::new();
+        for i in 0..hdr.local_attachment_desc.0 {
+            cursor.seek(SeekFrom::Start(
+                start_reading + hdr.local_attachment_desc.1 as u64 + (0x5c * i) as u64,
+            ))?;
+            local_attachments.push(StudioAttachment::read(cursor)?);
+        }
+
+        Ok(StudioMdl {
             header: (hdr, start_reading),
 
             body_parts,
             hitbox_sets,
             bones,
+            local_attachments,
         })
     }
 }

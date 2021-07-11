@@ -8,7 +8,7 @@ fn main() {
 
     let mut cursor = std::io::Cursor::new(BufReader::new(file));
 
-    let brih = mdl::StudioModel::read(cursor.get_mut()).unwrap();
+    let brih = mdl::StudioMdl::read(cursor.get_mut()).unwrap();
 
     println!("{:#?}", brih);
 }
