@@ -3,4 +3,6 @@
 members = [
     "mdl",
     "debug_parse",
+    "rpak",
+    "rpak_debug",
 ]

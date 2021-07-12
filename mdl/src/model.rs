@@ -92,6 +92,8 @@ impl StudioModel {
             meshes.push(StudioMesh::read(cursor)?);
         }
 
+        // Eyeballs are the bane of my existence...
+
         Ok(StudioModel {
             start_pos: start_reading,
 
