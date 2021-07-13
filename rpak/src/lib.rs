@@ -7,6 +7,8 @@ mod util;
 
 mod consts;
 use std::{
+    any::Any,
+    cell::RefMut,
     fmt::Debug,
     io::{Cursor, Read, Seek, SeekFrom},
     rc::Rc,
@@ -26,13 +28,15 @@ pub mod tf2;
 // dynamic shit per ext
 /// This trait represents what every file in the game should have and I know the meaning of it and it's also very useful
 pub trait FileEntry: Debug {
+    fn as_any(&self) -> &dyn Any;
+
     // getters
     /// Internal name hash used by the lookup functions
     fn get_guid(&self) -> u64;
     /// File's extension (no longer than 4 characters)
-    fn get_ext(&self) -> String;
+    fn get_ext(&self) -> &str;
     /// Implemented per file extension, not all types have it
-    fn get_name(&self) -> Option<String>; // ergh?
+    fn get_name(&self) -> Option<&str>; // ergh?
     /// Offset from the start of the file of so called description.
     /// Every file should have this field
     fn get_desc_off(&self) -> u64;
@@ -68,7 +72,45 @@ impl SectionDesc {
         })
     }
 
-    /// Parses an array of SectionDesc's of known size from a good-enough buffer
+    /// Parses an array of `SectionDesc`s of known size from a good-enough buffer
+    ///
+    /// # Arguments
+    ///
+    /// * `cursor` - A buffer which implements Read, Seek, ReadBytesExt
+    /// * `size` - Known size of the array, u16 is the game's limitation @ the moment...
+    pub fn parse<R: Read + Seek + ReadBytesExt>(
+        cursor: &mut R,
+        size: u16,
+    ) -> Result<Vec<Self>, std::io::Error> {
+        let mut ret = Vec::with_capacity(size as usize);
+        for _ in 0..size {
+            ret.push(Self::read(cursor)?);
+        }
+
+        Ok(ret)
+    }
+}
+
+#[derive(Debug)]
+pub struct DataChunk {
+    /// Section ID in `SectionDesc` array
+    pub section_id: u32,
+    /// Align byte that sometimes gets used
+    pub align_byte: u32,
+    /// Size of the chunk
+    pub size: u32,
+}
+
+impl DataChunk {
+    pub fn read<R: Read + Seek + ReadBytesExt>(cursor: &mut R) -> Result<Self, std::io::Error> {
+        Ok(Self {
+            section_id: cursor.read_u32::<LE>()?,
+            align_byte: cursor.read_u32::<LE>()?,
+            size: cursor.read_u32::<LE>()?,
+        })
+    }
+
+    /// Parses an array of `DataChunk`s of known size from a good-enough buffer
     ///
     /// # Arguments
     ///
@@ -89,14 +131,17 @@ impl SectionDesc {
 
 /// This trait represents generic workflow with all RPakFiles
 pub trait RPakFile: Debug {
+    fn as_any(&self) -> &dyn Any;
+
     fn is_compressed(&self) -> bool;
     fn should_lla(&self) -> bool;
 
-    fn get_decompressed(&self) -> &Cursor<Vec<u8>>;
+    fn get_decompressed(&self) -> RefMut<Cursor<Vec<u8>>>;
 
     fn get_version(&self) -> RPakVersion;
-    fn get_sections_desc(&self) -> Vec<SectionDesc>;
-    fn get_files(&self) -> Vec<Rc<dyn FileEntry>>;
+    fn get_sections_desc(&self) -> &Vec<SectionDesc>;
+    fn get_files(&self) -> &Vec<Rc<dyn FileEntry>>;
+    fn get_data_chunks(&self) -> &Vec<DataChunk>;
 }
 
 /// Takes rpak file and parses it into a viable format

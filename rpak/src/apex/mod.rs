@@ -1,9 +1,16 @@
+use std::cell::{RefCell, RefMut};
 use std::io::{Cursor, Read, Seek, SeekFrom};
+use std::rc::Rc;
 
 use byteorder::{ReadBytesExt, LE};
 
 use crate::decomp::decompress;
 use crate::util::string_from_buf;
+use crate::{DataChunk, SectionDesc};
+
+use self::filetypes::FileGeneric;
+
+pub mod filetypes;
 
 #[derive(Debug)]
 pub struct RPakHeader {
@@ -22,8 +29,8 @@ pub struct RPakHeader {
     pub unk38: u64,
     pub unk40: u64,
 
-    pub skip_shit: u16,       // 0x48
-    pub unk4a: u16,           // 0x4a
+    pub starpak_len: u16,     // 0x48
+    pub starpak_opt_len: u16, // 0x4a
     pub sections_num: u16,    // 0x4c
     pub data_chunks_num: u16, // 0x4e
 
@@ -81,8 +88,8 @@ impl RPakHeader {
             unk38: cursor.read_u64::<LE>()?,
             unk40: cursor.read_u64::<LE>()?,
 
-            skip_shit: cursor.read_u16::<LE>()?,
-            unk4a: cursor.read_u16::<LE>()?,
+            starpak_len: cursor.read_u16::<LE>()?,
+            starpak_opt_len: cursor.read_u16::<LE>()?,
             sections_num: cursor.read_u16::<LE>()?,
             data_chunks_num: cursor.read_u16::<LE>()?,
 
@@ -117,23 +124,36 @@ impl RPakHeader {
 pub struct RPakFile {
     pub header: RPakHeader,
     #[derivative(Debug = "ignore")]
-    pub decompressed: Cursor<Vec<u8>>,
+    pub decompressed: Rc<RefCell<Cursor<Vec<u8>>>>,
     pub data_start: u64,
 
     pub starpak: String,
-    pub files: Vec<std::rc::Rc<()>>,
+    pub starpak_opt: Option<String>,
+    pub files: Vec<std::rc::Rc<dyn crate::FileEntry>>,
     pub sections: Vec<crate::SectionDesc>,
+    #[derivative(Debug = "ignore")]
+    pub data_chunks: Vec<DataChunk>,
+
+    #[derivative(Debug = "ignore")]
+    pub seeks: Vec<u64>,
 }
 
 impl crate::RPakFile for RPakFile {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn get_version(&self) -> crate::RPakVersion {
         crate::RPakVersion::APEX
     }
-    fn get_files(&self) -> Vec<std::rc::Rc<dyn crate::FileEntry>> {
-        todo!()
+    fn get_files(&self) -> &Vec<std::rc::Rc<dyn crate::FileEntry>> {
+        self.files.as_ref()
     }
-    fn get_sections_desc(&self) -> Vec<crate::SectionDesc> {
-        todo!()
+    fn get_sections_desc(&self) -> &Vec<crate::SectionDesc> {
+        self.sections.as_ref()
+    }
+    fn get_data_chunks(&self) -> &Vec<DataChunk> {
+        self.data_chunks.as_ref()
     }
 
     fn is_compressed(&self) -> bool {
@@ -143,8 +163,8 @@ impl crate::RPakFile for RPakFile {
         self.header.should_lla()
     }
 
-    fn get_decompressed(&self) -> &Cursor<Vec<u8>> {
-        &self.decompressed
+    fn get_decompressed(&self) -> RefMut<Cursor<Vec<u8>>> {
+        (*self.decompressed).borrow_mut()
     }
 }
 
@@ -178,22 +198,29 @@ impl RPakFile {
         decompressed.seek(SeekFrom::Start(crate::HEADER_SIZE_APEX as u64))?;
         let starpak = string_from_buf(&mut decompressed);
 
-        let starpak_skipped = crate::HEADER_SIZE_APEX as u64 + header.skip_shit as u64;
-        // unk4a here
+        let starpak_skipped = crate::HEADER_SIZE_APEX as u64 + header.starpak_len as u64;
+        decompressed.seek(SeekFrom::Start(starpak_skipped))?;
+        let starpak_opt = {
+            let tmp = string_from_buf(&mut decompressed);
+            match tmp.len() {
+                0 => None,
+                _ => Some(tmp),
+            }
+        };
 
-        let unk4a_skipped = starpak_skipped + header.unk4a as u64;
-        decompressed.seek(SeekFrom::Start(unk4a_skipped))?;
-        // TODO: parse sections...
+        let starpak_opt_skipped = starpak_skipped + header.starpak_opt_len as u64;
+        decompressed.seek(SeekFrom::Start(starpak_opt_skipped))?;
+        let sections = SectionDesc::parse(&mut decompressed, header.sections_num)?;
 
-        let sections_skipped = unk4a_skipped + (16 * header.sections_num as u64);
-        // TODO: parse data chunks...
+        let sections_skipped = starpak_opt_skipped + (16 * header.sections_num as u64);
+        decompressed.seek(SeekFrom::Start(sections_skipped))?;
+        let data_chunks = DataChunk::parse(&mut decompressed, header.data_chunks_num)?;
 
         let data_chunks_skipped = sections_skipped + (12 * header.data_chunks_num as u64);
         // unk54 here
 
         let unk54_skipped = data_chunks_skipped + (8 * header.unk54 as u64);
-        decompressed.seek(SeekFrom::Start(unk54_skipped))?;
-        // TODO: parse file entries
+        // parsing files is moved so we can get juicy file offsets
 
         let file_entries_skipped = unk54_skipped + (0x50 * header.num_files as u64);
         // unk5c here
@@ -215,15 +242,51 @@ impl RPakFile {
 
         let unk70_skipped = unk6c_skipped + (24 * header.unk70 as u64);
 
+        // populate seek array
+        let mut seeks = vec![0u64; header.data_chunks_num as usize];
+        if header.data_chunks_num > 0 {
+            seeks[0] = unk70_skipped;
+            if header.data_chunks_num > 1 {
+                for i in 1..header.data_chunks_num as usize {
+                    seeks[i] = seeks[i - 1] + data_chunks[i - 1].size as u64;
+                }
+            }
+        }
+
+        // populate files array
+        decompressed.seek(SeekFrom::Start(unk54_skipped))?;
+        let mut files = Vec::<Rc<dyn crate::FileEntry>>::with_capacity(header.num_files as usize);
+        for _ in 0..header.num_files {
+            let generic = FileGeneric::read(&mut decompressed, &seeks).unwrap();
+            // mb move the actual parsing?
+            let bak_pos = decompressed.stream_position()?;
+            let spec: Rc<dyn crate::FileEntry> = match generic.extension.as_str() {
+                "txtr" => Rc::new(generic),
+                "matl" => Rc::new(generic),
+                "ui" => Rc::new(filetypes::rui::RUI::ctor(
+                    &mut decompressed,
+                    &seeks,
+                    generic,
+                )?),
+                _ => Rc::new(generic),
+            };
+            decompressed.seek(SeekFrom::Start(bak_pos))?;
+            files.push(spec);
+        }
+
         // We don't parse data just yet?...
         Ok(RPakFile {
             header,
-            decompressed,
+            decompressed: Rc::new(RefCell::new(decompressed)),
             data_start: unk70_skipped,
 
             starpak,
-            files: Vec::new(),
-            sections: Vec::new(),
+            starpak_opt,
+            files,
+            sections,
+            data_chunks,
+
+            seeks,
         })
     }
 }
