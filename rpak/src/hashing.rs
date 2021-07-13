@@ -1,5 +1,6 @@
 use crate::binding::hash_string;
 
+/// Internal hashing function used for the GUID generation
 pub fn hash(string: String) -> u64 {
     unsafe {
         let tmp = std::ffi::CString::new(string).unwrap();
