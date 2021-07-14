@@ -1,6 +1,6 @@
 use std::io::{Read, Seek, SeekFrom};
 
-use byteorder::{LE, ReadBytesExt};
+use byteorder::{ReadBytesExt, LE};
 
 use crate::FileEntry;
 
@@ -125,7 +125,7 @@ impl UImg {
                 }
                 ret
             };
-    
+
             let texture_dims = {
                 let mut ret = Vec::<(u16, u16)>::with_capacity(textures_num as usize);
                 cursor.seek(SeekFrom::Start(textures_dims_desc.2))?;
@@ -136,7 +136,7 @@ impl UImg {
                 }
                 ret
             };
-    
+
             let texture_hashes = {
                 let mut ret = Vec::<u32>::with_capacity(textures_num as usize);
                 cursor.seek(SeekFrom::Start(texture_hashes_disc.2))?;
