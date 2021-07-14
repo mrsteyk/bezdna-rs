@@ -5,6 +5,7 @@ use byteorder::{ReadBytesExt, LE};
 type Descriptor = (u32, u32, u64);
 
 pub mod rui;
+pub mod txtr;
 pub mod uimg;
 
 #[derive(Debug)]
