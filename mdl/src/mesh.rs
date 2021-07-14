@@ -1,7 +1,5 @@
-use byteorder::{ReadBytesExt, WriteBytesExt, LE};
-use std::io::{Read, Seek, SeekFrom, Write};
-
-use crate::util;
+use byteorder::{ReadBytesExt, LE};
+use std::io::{Read, Seek};
 
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone, Copy)]

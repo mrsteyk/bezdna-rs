@@ -1,5 +1,5 @@
-use byteorder::{ReadBytesExt, WriteBytesExt, LE};
-use std::io::{Read, Seek, SeekFrom, Write};
+use byteorder::{ReadBytesExt, LE};
+use std::io::{Read, Seek, SeekFrom};
 
 use crate::util;
 

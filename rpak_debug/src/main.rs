@@ -1,7 +1,4 @@
 use std::{
-    any::{Any, TypeId},
-    ascii::AsciiExt,
-    convert::TryInto,
     fs::File,
     io::BufReader,
 };
@@ -14,7 +11,7 @@ fn apex(rpak: &rpak::apex::RPakFile) {
     println!("Apex mode");
 
     let header = &rpak.header;
-    println!("{}\n", header.part_rpak);
+    println!("{} | {}\n", header.part_rpak, header.is_compressed());
 
     println!(
         "StarPak: {}\nStarPak: {}\n",
@@ -77,18 +74,25 @@ fn apex(rpak: &rpak::apex::RPakFile) {
 }
 
 fn main() {
-    let file =
-        File::open("D:\\SteamLibrary\\steamapps\\common\\Apex Legends\\paks\\Win64\\ui.rpak")
-            .unwrap();
-    let mut cursor = std::io::Cursor::new(BufReader::new(file));
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() < 2 {
+        println!("Invalid usage!")
+    } else {
+        let file = File::open(&args[1]).unwrap();
+        let mut cursor = std::io::Cursor::new(BufReader::new(file));
 
-    //println!("{:#?}", rpak);
-    if let Ok(rpak) = rpak::parse_rpak(cursor.get_mut()) {
-        let drpak = rpak.as_any();
-        if let Some(arpak) = drpak.downcast_ref::<rpak::apex::RPakFile>() {
-            apex(arpak)
-        } else {
-            // tf2(drpak.downcast_ref::<rpak::tf2::RPakFile>().unwrap())
+        //println!("{:#?}", rpak);
+        if let Ok(rpak) = rpak::parse_rpak(cursor.get_mut()) {
+            let drpak = rpak.as_any();
+
+            let decomp = rpak.get_decompressed();
+            std::fs::write(args[1].to_owned() + ".raw", decomp.get_ref()).unwrap();
+
+            if let Some(arpak) = drpak.downcast_ref::<rpak::apex::RPakFile>() {
+                apex(arpak)
+            } else {
+                // tf2(drpak.downcast_ref::<rpak::tf2::RPakFile>().unwrap())
+            }
         }
     }
 }

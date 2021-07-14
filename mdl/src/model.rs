@@ -1,5 +1,5 @@
-use byteorder::{ReadBytesExt, WriteBytesExt, LE};
-use std::io::{Read, Seek, SeekFrom, Write};
+use byteorder::{ReadBytesExt, LE};
+use std::io::{Read, Seek, SeekFrom};
 
 use crate::{util, StudioMesh};
 
@@ -70,12 +70,12 @@ impl StudioModel {
         let mesh_num = cursor.read_u32::<LE>()?;
         let mesh_index = cursor.read_i32::<LE>()?;
 
-        let vertex_num = cursor.read_u32::<LE>()?;
-        let vertex_index = cursor.read_i32::<LE>()?;
-        let tanget_index = cursor.read_i32::<LE>()?;
+        let _vertex_num = cursor.read_u32::<LE>()?;
+        let _vertex_index = cursor.read_i32::<LE>()?;
+        let _tanget_index = cursor.read_i32::<LE>()?;
 
-        let eyeball_num = cursor.read_u32::<LE>()?;
-        let eyeball_index = cursor.read_i32::<LE>()?;
+        let _eyeball_num = cursor.read_u32::<LE>()?;
+        let _eyeball_index = cursor.read_i32::<LE>()?;
 
         let vertex_data = cursor.read_u32::<LE>()?;
         let tangent_data = cursor.read_u32::<LE>()?;

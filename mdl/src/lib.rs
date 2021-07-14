@@ -1,32 +1,32 @@
-use byteorder::{ReadBytesExt, WriteBytesExt, LE};
-use std::io::{ErrorKind, Read, Seek, SeekFrom, Write};
+use byteorder::{ReadBytesExt, LE};
+use std::io::{ErrorKind, Read, Seek, SeekFrom};
 
 mod studiohdr;
 use studiohdr::StudioHdrT;
 
 mod studiobodypart;
 pub use studiobodypart::StudioBodyPart;
-use studiobodypart::StudioBodyPartT;
+//use studiobodypart::StudioBodyPartT;
 
 mod hitbox;
-use hitbox::StudioHitboxSetT;
 pub use hitbox::{StudioHitbox, StudioHitboxSet};
+//use hitbox::StudioHitboxSetT;
 
 mod bone;
 pub use bone::StudioBone;
-use bone::StudioBoneT;
+//use bone::StudioBoneT;
 
 mod attachment;
 pub use attachment::StudioAttachment;
-use attachment::StudioAttachmentT;
+//use attachment::StudioAttachmentT;
 
 mod model;
 pub use model::StudioModel;
-use model::StudioModelT;
+//use model::StudioModelT;
 
 mod mesh;
 pub use mesh::StudioMesh;
-use mesh::StudioMeshT;
+//use mesh::StudioMeshT;
 
 mod util;
 

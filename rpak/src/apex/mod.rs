@@ -52,10 +52,10 @@ pub struct RPakHeader {
 }
 
 impl RPakHeader {
-    fn is_compressed(&self) -> bool {
+    pub fn is_compressed(&self) -> bool {
         (self.flags >> 8) & 0xFF == 1
     }
-    fn should_lla(&self) -> bool {
+    pub fn should_lla(&self) -> bool {
         // wait what?
         self.flags & 0x11 != 0
     }
@@ -264,6 +264,11 @@ impl RPakFile {
                 "txtr" => Rc::new(generic),
                 "matl" => Rc::new(generic),
                 "ui" => Rc::new(filetypes::rui::RUI::ctor(
+                    &mut decompressed,
+                    &seeks,
+                    generic,
+                )?),
+                "uimg" => Rc::new(filetypes::uimg::UImg::ctor(
                     &mut decompressed,
                     &seeks,
                     generic,

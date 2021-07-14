@@ -20,7 +20,7 @@ pub use consts::*;
 mod hashing;
 pub use hashing::hash;
 
-mod decomp;
+pub mod decomp;
 
 pub mod apex;
 pub mod tf2;
