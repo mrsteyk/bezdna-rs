@@ -1,14 +1,21 @@
-use std::{fs::File, io::BufReader};
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufRead, BufReader},
+    path::Path,
+};
 
 use rpak::FileEntry;
 
 extern crate rpak;
 
-fn apex(rpak: &rpak::apex::RPakFile) {
+fn apex(rpak: &rpak::apex::RPakFile, guid_name: &HashMap<u64, String>) {
     println!("Apex mode");
 
     let header = &rpak.header;
     println!("{} | {}\n", header.part_rpak, header.is_compressed());
+
+    println!("{:#?}", header);
 
     println!(
         "StarPak: {}\nStarPak: {}\n",
@@ -33,13 +40,20 @@ fn apex(rpak: &rpak::apex::RPakFile) {
 
     println!("\nFiles:");
     for file in &rpak.files {
+        let real_name = if let Some(ret) = guid_name.get(&file.get_guid()) {
+            ret.as_str()
+        } else {
+            ""
+        };
+
         match file.get_ext() {
             "ui" => {
                 let rui = file
                     .as_any()
                     .downcast_ref::<rpak::apex::filetypes::rui::RUI>()
                     .unwrap();
-                println!("{}.{}.ui", rui.name, rui.get_guid());
+
+                println!("{}.{}.ui | {}", rui.name, rui.get_guid(), real_name);
 
                 println!("\tDesc@{:016X}", rui.get_desc_off());
                 println!("\tUnk1@{:016X}", rui.unk1.2);
@@ -56,7 +70,8 @@ fn apex(rpak: &rpak::apex::RPakFile) {
             }
             _ => {
                 println!(
-                    "{}.{:016X}.{:4} {:X?}",
+                    "{}.{}.{:016X}.{:4} {:X?}",
+                    real_name,
                     match file.get_name() {
                         Some(v) => v,
                         _ => "",
@@ -75,7 +90,10 @@ fn main() {
     if args.len() < 2 {
         println!("Invalid usage!")
     } else {
-        let file = File::open(&args[1]).unwrap();
+        let path = Path::new(&args[1]);
+        let file_stem = path.file_stem().unwrap().to_str().unwrap();
+        let file = File::open(path).unwrap();
+        println!("stem: {}", file_stem);
         let mut cursor = std::io::Cursor::new(BufReader::new(file));
 
         //println!("{:#?}", rpak);
@@ -85,8 +103,27 @@ fn main() {
             let decomp = rpak.get_decompressed();
             std::fs::write(args[1].to_owned() + ".raw", decomp.get_ref()).unwrap();
 
+            let guid_name = {
+                let mut ret = rpak::predict_names(&*rpak, file_stem.to_owned());
+
+                if args.len() > 2 {
+                    let file = File::open(&args[2]).unwrap();
+                    let buf = BufReader::new(file);
+
+                    buf.lines().for_each(|f| {
+                        // doing the replace makes it look nicer...
+                        let line = f.expect("Line brih").replace("\\", "/");
+                        let hash = rpak::hash(line.clone());
+                        //println!("{}", &line);
+                        ret.insert(hash, line);
+                    });
+                }
+
+                ret
+            };
+
             if let Some(arpak) = drpak.downcast_ref::<rpak::apex::RPakFile>() {
-                apex(arpak)
+                apex(arpak, &guid_name)
             } else {
                 // tf2(drpak.downcast_ref::<rpak::tf2::RPakFile>().unwrap())
             }

@@ -9,6 +9,7 @@ mod consts;
 use std::{
     any::Any,
     cell::RefMut,
+    collections::HashMap,
     fmt::Debug,
     io::{Cursor, Read, Seek, SeekFrom},
     rc::Rc,
@@ -186,4 +187,64 @@ pub fn get_rpak_version_cursor<R: Read + Seek + ReadBytesExt>(cursor: &mut R) ->
         },
         _ => RPakVersion::Invalid,
     }
+}
+
+fn generate_pair(string: &String) -> (u64, String) {
+    // idk how to not clone...
+    let guid = hashing::hash(string.clone());
+    (guid, string.clone())
+}
+
+/// Try to populate the predicted names `HashMap`
+pub fn predict_names(rpak_file: &dyn RPakFile, file_stem: String) -> HashMap<u64, String> {
+    let mut ret = HashMap::<u64, String>::new();
+
+    if file_stem.ends_with("_loadscreen") {
+        // LoadScreen's texture and atlas
+        let mapname = &file_stem[0..file_stem.len() - 11];
+        let atlas = generate_pair(&format!(
+            "ui_image_atlas/loadscreens/{}_widescreen.rpak",
+            mapname
+        ));
+        let texture = generate_pair(&format!(
+            "texture/ui_atlas/loadscreens/{}_widescreen.rpak",
+            mapname
+        ));
+
+        ret.insert(atlas.0, atlas.1);
+        ret.insert(texture.0, texture.1);
+    } else if file_stem.starts_with("mp_") {
+        // Map shit...
+        // TODO: _genN and _muN shit...
+        let mapname = &file_stem;
+        // let mapname_short = ;
+
+        // use short here
+        let map_zones = generate_pair(&format!("datatable/map_zones/zones_{}.rpak", mapname));
+        ret.insert(map_zones.0, map_zones.1);
+
+        // use full here
+        let props = generate_pair(&format!("maps/{}_props.rpak", mapname));
+        ret.insert(props.0, props.1);
+
+        // use full here
+        let cubemaps_hdr = generate_pair(&format!("texture/maps/{}/cubemaps_hdr.rpak", mapname));
+        ret.insert(cubemaps_hdr.0, cubemaps_hdr.1);
+
+        // use full here
+        let cubemap_ambients = generate_pair(&format!(
+            "texture_extension/maps/{}/cubemaps_hdr/cubemap_ambients.rpak",
+            mapname
+        ));
+        ret.insert(cubemap_ambients.0, cubemap_ambients.1);
+
+        // use full here
+        let overviews_atlas = generate_pair(&format!("ui_image_atlas/overviews/{}.rpak", mapname));
+        let overviews_texture =
+            generate_pair(&format!("texture/ui_atlas/overviews/{}.rpak", mapname));
+        ret.insert(overviews_atlas.0, overviews_atlas.1);
+        ret.insert(overviews_texture.0, overviews_texture.1);
+    }
+
+    ret
 }
