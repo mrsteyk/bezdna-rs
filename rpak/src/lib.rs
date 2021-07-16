@@ -196,6 +196,7 @@ fn generate_pair(string: &str) -> (u64, String) {
 }
 
 /// Try to populate the predicted names `HashMap`
+#[allow(unused_variables)]
 pub fn predict_names(rpak_file: &dyn RPakFile, file_stem: String) -> HashMap<u64, String> {
     let mut ret = HashMap::<u64, String>::new();
 
@@ -245,6 +246,18 @@ pub fn predict_names(rpak_file: &dyn RPakFile, file_stem: String) -> HashMap<u64
         ret.insert(overviews_atlas.0, overviews_atlas.1);
         ret.insert(overviews_texture.0, overviews_texture.1);
     }
+
+    rpak_file
+        .get_files()
+        .iter()
+        .for_each(|f| match f.get_ext() {
+            "matl" => {}
+            "ui" => {
+                let pair = generate_pair(&format!("ui/{}.rpak", f.get_name().unwrap()));
+                ret.insert(pair.0, pair.1);
+            }
+            _ => {}
+        });
 
     ret
 }

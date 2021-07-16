@@ -46,6 +46,18 @@ fn apex(rpak: &rpak::apex::RPakFile, guid_name: &HashMap<u64, String>) {
             ""
         };
 
+        println!(
+            "{}.{}.{:016X}.{:4} {:?}",
+            real_name,
+            match file.get_name() {
+                Some(v) => v,
+                _ => "",
+            },
+            file.get_guid(),
+            file.get_ext(),
+            file,
+        );
+
         match file.get_ext() {
             "ui" => {
                 let rui = file
@@ -53,7 +65,7 @@ fn apex(rpak: &rpak::apex::RPakFile, guid_name: &HashMap<u64, String>) {
                     .downcast_ref::<rpak::apex::filetypes::rui::RUI>()
                     .unwrap();
 
-                println!("{}.{}.ui | {}", rui.name, rui.get_guid(), real_name);
+                //println!("{}.{:016X}.ui | {}", rui.name, rui.get_guid(), real_name);
 
                 println!("\tDesc@{:016X}", rui.get_desc_off());
                 println!("\tUnk1@{:016X}", rui.unk1.2);
@@ -68,19 +80,7 @@ fn apex(rpak: &rpak::apex::RPakFile, guid_name: &HashMap<u64, String>) {
                     println!("\t\t{:?}", arg);
                 }
             }
-            _ => {
-                println!(
-                    "{}.{}.{:016X}.{:4} {:X?}",
-                    real_name,
-                    match file.get_name() {
-                        Some(v) => v,
-                        _ => "",
-                    },
-                    file.get_guid(),
-                    file.get_ext(),
-                    file
-                );
-            }
+            _ => {}
         }
     }
 }
