@@ -261,22 +261,16 @@ impl RPakFile {
             // mb move the actual parsing?
             let bak_pos = decompressed.stream_position()?;
             let spec: Rc<dyn crate::FileEntry> = match generic.extension.as_str() {
-                "txtr" => Rc::new(filetypes::txtr::Texture::ctor(
-                    &mut decompressed,
-                    &seeks,
-                    generic,
-                )?),
+                "txtr" => Rc::new(
+                    filetypes::txtr::Texture::ctor(&mut decompressed, &seeks, generic).unwrap(),
+                ),
                 "matl" => Rc::new(generic),
-                "ui" => Rc::new(filetypes::rui::RUI::ctor(
-                    &mut decompressed,
-                    &seeks,
-                    generic,
-                )?),
-                "uimg" => Rc::new(filetypes::uimg::UImg::ctor(
-                    &mut decompressed,
-                    &seeks,
-                    generic,
-                )?),
+                "ui" => {
+                    Rc::new(filetypes::rui::RUI::ctor(&mut decompressed, &seeks, generic).unwrap())
+                }
+                "uimg" => Rc::new(
+                    filetypes::uimg::UImg::ctor(&mut decompressed, &seeks, generic).unwrap(),
+                ),
                 _ => Rc::new(generic),
             };
             decompressed.seek(SeekFrom::Start(bak_pos))?;

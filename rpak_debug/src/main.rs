@@ -96,36 +96,43 @@ fn main() {
         println!("stem: {}", file_stem);
         let mut cursor = std::io::Cursor::new(BufReader::new(file));
 
-        //println!("{:#?}", rpak);
-        if let Ok(rpak) = rpak::parse_rpak(cursor.get_mut()) {
-            let drpak = rpak.as_any();
+        match rpak::parse_rpak(cursor.get_mut()) {
+            Ok(rpak) => {
+                let drpak = rpak.as_any();
 
-            let decomp = rpak.get_decompressed();
-            std::fs::write(args[1].to_owned() + ".raw", decomp.get_ref()).unwrap();
+                print!("Writing decompressed... ");
+                let decomp = rpak.get_decompressed();
+                std::fs::write(args[1].to_owned() + ".raw", decomp.get_ref()).unwrap();
+                println!("ok");
 
-            let guid_name = {
-                let mut ret = rpak::predict_names(&*rpak, file_stem.to_owned());
+                let guid_name = {
+                    let mut ret = rpak::predict_names(&*rpak, file_stem.to_owned());
 
-                if args.len() > 2 {
-                    let file = File::open(&args[2]).unwrap();
-                    let buf = BufReader::new(file);
+                    if args.len() > 2 {
+                        let file = File::open(&args[2]).unwrap();
+                        let buf = BufReader::new(file);
 
-                    buf.lines().for_each(|f| {
-                        // doing the replace makes it look nicer...
-                        let line = f.expect("Line brih").replace("\\", "/");
-                        let hash = rpak::hash(line.clone());
-                        //println!("{}", &line);
-                        ret.insert(hash, line);
-                    });
+                        buf.lines().for_each(|f| {
+                            // doing the replace makes it look nicer...
+                            let line = f.expect("Line brih").replace("\\", "/");
+                            let hash = rpak::hash(line.clone());
+                            //println!("{}", &line);
+                            ret.insert(hash, line);
+                        });
+                    }
+
+                    ret
+                };
+
+                if let Some(arpak) = drpak.downcast_ref::<rpak::apex::RPakFile>() {
+                    apex(arpak, &guid_name)
+                } else {
+                    // tf2(drpak.downcast_ref::<rpak::tf2::RPakFile>().unwrap())
+                    todo!()
                 }
-
-                ret
-            };
-
-            if let Some(arpak) = drpak.downcast_ref::<rpak::apex::RPakFile>() {
-                apex(arpak, &guid_name)
-            } else {
-                // tf2(drpak.downcast_ref::<rpak::tf2::RPakFile>().unwrap())
+            }
+            Err(err) => {
+                panic!("{:?}", err);
             }
         }
     }

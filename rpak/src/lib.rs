@@ -189,10 +189,10 @@ pub fn get_rpak_version_cursor<R: Read + Seek + ReadBytesExt>(cursor: &mut R) ->
     }
 }
 
-fn generate_pair(string: &String) -> (u64, String) {
+fn generate_pair(string: &str) -> (u64, String) {
     // idk how to not clone...
-    let guid = hashing::hash(string.clone());
-    (guid, string.clone())
+    let guid = hashing::hash(string.to_owned());
+    (guid, string.to_owned())
 }
 
 /// Try to populate the predicted names `HashMap`

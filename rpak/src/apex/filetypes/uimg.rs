@@ -85,7 +85,12 @@ impl UImg {
 
         let _unk0 = cursor.read_u64::<LE>()?;
         let dims = (cursor.read_u16::<LE>()?, cursor.read_u16::<LE>()?);
-        let textures_num = cursor.read_u32::<LE>()?;
+        // Я ебал в рот эту парашу лол это самое ужасное что я когда-либо видел...
+        let textures_offsets_num = cursor.read_u16::<LE>()?;
+        let textures_num = match cursor.read_u16::<LE>()? {
+            0 => 1u16,
+            val => val,
+        };
 
         let textures_offsets_desc = {
             let id = cursor.read_u32::<LE>()?;
@@ -116,9 +121,9 @@ impl UImg {
         // Rust :TM:
         let textures = {
             let texture_offsets = {
-                let mut ret = Vec::<[f32; 8]>::with_capacity(textures_num as usize);
+                let mut ret = Vec::<[f32; 8]>::with_capacity(textures_offsets_num as usize);
                 cursor.seek(SeekFrom::Start(textures_offsets_desc.2))?;
-                for _ in 0..textures_num {
+                for _ in 0..textures_offsets_num {
                     let mut tmp = [0f32; 8];
                     cursor.read_f32_into::<LE>(&mut tmp)?;
                     ret.push(tmp);
