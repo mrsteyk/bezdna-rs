@@ -12,9 +12,10 @@
 | mdl_  | Model                            |
 | uimg  | UI Image Atlas                   |
 | txtr  | DDS/DXGI Texture                 |
-| shdr  | DX compiled HLSLS shaders        |
+| shdr  | DXBC compiled shaders            |
 | shds  | Shader sets (for uber shaders?)  |
 | matl  | Material                         |
 | stgs  | SETTINGS... who would've thought |
 | stlt  | Settings layout                  |
 | dtbl  | Data table (CSV kind of thing)   |
+| subt  | Subtitles                        |

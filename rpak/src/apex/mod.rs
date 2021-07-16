@@ -271,6 +271,9 @@ impl RPakFile {
                 "uimg" => Rc::new(
                     filetypes::uimg::UImg::ctor(&mut decompressed, &seeks, generic).unwrap(),
                 ),
+                "dtbl" => Rc::new(
+                    filetypes::dtbl::DataTable::ctor(&mut decompressed, &seeks, generic).unwrap(),
+                ),
                 _ => Rc::new(generic),
             };
             decompressed.seek(SeekFrom::Start(bak_pos))?;

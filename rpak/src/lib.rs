@@ -259,5 +259,19 @@ pub fn predict_names(rpak_file: &dyn RPakFile, file_stem: String) -> HashMap<u64
             _ => {}
         });
 
+    // comics...
+    for i in 6..=11 {
+        for j in 0..32 {
+            let pair = generate_pair(&format!("datatable/comic/season{}/page{}.rpak", i, j));
+            ret.insert(pair.0, pair.1);
+
+            let pair = generate_pair(&format!(
+                "settings/itemflav/quest_comic/s{:02}/page{:02}.rpak",
+                i, j
+            ));
+            ret.insert(pair.0, pair.1);
+        }
+    }
+
     ret
 }

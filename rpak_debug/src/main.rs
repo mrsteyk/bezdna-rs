@@ -5,7 +5,7 @@ use std::{
     path::Path,
 };
 
-use rpak::FileEntry;
+use rpak::{apex::filetypes::dtbl::ColumnData, FileEntry};
 
 extern crate rpak;
 
@@ -47,7 +47,7 @@ fn apex(rpak: &rpak::apex::RPakFile, guid_name: &HashMap<u64, String>) {
         };
 
         println!(
-            "{}.{}.{:016X}.{:4} {:?}",
+            "{}.{}.{:016X}.{:4} {:X?}",
             real_name,
             match file.get_name() {
                 Some(v) => v,
@@ -78,6 +78,41 @@ fn apex(rpak: &rpak::apex::RPakFile, guid_name: &HashMap<u64, String>) {
                 println!("\tArgs[{}]", rui.args.len());
                 for arg in &rui.args {
                     println!("\t\t{:?}", arg);
+                }
+            }
+            "dtbl" => {
+                let dtbl = file
+                    .as_any()
+                    .downcast_ref::<rpak::apex::filetypes::dtbl::DataTable>()
+                    .unwrap();
+
+                print!("\t");
+
+                for column in &dtbl.column_names {
+                    print!("{}\t", column);
+                }
+
+                println!();
+
+                for row in &dtbl.data {
+                    print!("\t");
+                    for col in row {
+                        match col {
+                            ColumnData::String(v) => print!("\"{}\"", v),
+                            ColumnData::Asset(v) => print!("$\"{}\"", v),
+                            ColumnData::AssetNoPreCache(v) => print!("$\"{}\"", v),
+
+                            ColumnData::Bool(v) => print!("{}", v),
+                            ColumnData::Float(v) => print!("{}", v),
+                            ColumnData::Int(v) => print!("{}", v),
+
+                            ColumnData::Vector(v) => print!("{:?}", v),
+
+                            ColumnData::Invalid(v) => todo!("Invalid: {}", v),
+                        }
+                        print!("\t");
+                    }
+                    println!();
                 }
             }
             _ => {}
