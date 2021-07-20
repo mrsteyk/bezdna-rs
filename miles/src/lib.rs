@@ -12,6 +12,7 @@ pub mod tf2;
 
 pub mod binka;
 mod transforms;
+mod binding;
 
 #[derive(Debug)]
 pub enum MilesError {

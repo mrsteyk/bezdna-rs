@@ -7,7 +7,7 @@ use std::{
 use bitbuffer::{BitReadBuffer, BitReadStream, LittleEndian};
 use byteorder::{ReadBytesExt, LE};
 
-use crate::{MilesError, transforms::ddct};
+use crate::{MilesError, binding, transforms::ddct};
 
 use crate::transforms;
 
@@ -313,13 +313,17 @@ impl BinkA {
                 }
 
                 let mut k = 0;
-                for j in 0..num_bands {
-                    if bands[j as usize] * 2 < 2 {
-                        k = j;
-                        q = quants[k as usize];
-                    } else {
-                        break;
-                    }
+                // for j in 0..num_bands {
+                //     if bands[j as usize] * 2 < 2 {
+                //         k = j;
+                //         q = quants[k as usize];
+                //     } else {
+                //         break;
+                //     }
+                // }
+                while bands[k]*2 < 2 {
+                    k+=1;
+                    q = quants[k as usize];
                 }
 
                 let mut j = 2;
@@ -342,6 +346,9 @@ impl BinkA {
                         jj, width, j, coeffs[0], coeffs[1]
                     );
                     if width == 0 {
+                        for a in j..jj {
+                            coeffs[a as usize] = 0f64;
+                        }
                         j = jj;
                         // no need to zero coeffs???
                         //todo!();
@@ -372,17 +379,20 @@ impl BinkA {
                 }
 
                 // судя по тому что мне пришлось трэшнуть 2 бита - это дцт, а там пиздец...
-                ddct(
-                    frame_len as i32,
-                    1,
-                    coeffs.as_mut(),
-                    fft4g_ip.as_mut(),
-                    ddct_w.as_mut(),
-                );
+                // ddct(
+                //     frame_len as i32,
+                //     1,
+                //     coeffs.as_mut(),
+                //     fft4g_ip.as_mut(),
+                //     ddct_w.as_mut(),
+                // );
 
-                for c in coeffs.iter_mut() {
-                    *c = *c * root as f64;
-                }
+                unsafe { binding::ddct(frame_len as i32, 1, coeffs.as_mut_ptr(), fft4g_ip.as_mut_ptr(), ddct_w.as_mut_ptr()); };
+                //unsafe { binding::rdft(frame_len as i32, -1, coeffs.as_mut_ptr(), fft4g_ip.as_mut_ptr(), ddct_w.as_mut_ptr()); };
+
+                let coeffs: Vec<f64> = coeffs.iter().map(|f| {
+                    f * root as f64
+                }).collect();
 
                 println!("{:?} {} {}", &coeffs[..frame_len as usize], frame_len, i);
             }
