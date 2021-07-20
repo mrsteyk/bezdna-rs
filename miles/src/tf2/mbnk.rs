@@ -11,13 +11,13 @@ pub struct Sound {
     //pub name_offset: u32,
     pub name: String,
 
-    pub sample_rate: u16,
+    pub sample_rate: u16, // BINKA+6
     // 6 here
     pub unk6: u16,
 
     pub channels: u8, // channels or some shit...
     // 9 here
-    pub unk9: u8,
+    pub unk9: u8, // same as in BINKA+4
     pub unkA: u32,
     pub unkE: u32,
     pub unk12: u32,
@@ -25,10 +25,10 @@ pub struct Sound {
     pub unk18: u32,
     pub unk1C: u32,
 
-    pub unk20: u32, // ...
-    pub unk24: u32, // ...
+    pub file_size: u32,
+    pub samples_count: u32,
 
-    pub unk28: u32, // ...
+    pub stream_off: u32, // Seek from start in stream...
 
     pub unk2C: u32,
 
@@ -201,10 +201,10 @@ impl MilesBank {
                     unk18: cursor.read_u32::<LE>()?,
                     unk1C: cursor.read_u32::<LE>()?,
 
-                    unk20: cursor.read_u32::<LE>()?,
-                    unk24: cursor.read_u32::<LE>()?,
+                    file_size: cursor.read_u32::<LE>()?,
+                    samples_count: cursor.read_u32::<LE>()?,
 
-                    unk28: cursor.read_u32::<LE>()?,
+                    stream_off: cursor.read_u32::<LE>()?,
 
                     unk2C: cursor.read_u32::<LE>()?,
 

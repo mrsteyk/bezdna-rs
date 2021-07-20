@@ -10,6 +10,8 @@ mod util;
 
 pub mod tf2;
 
+pub mod binka;
+
 #[derive(Debug)]
 pub enum MilesError {
     InvalidHeader(u32),
