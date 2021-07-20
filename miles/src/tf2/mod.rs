@@ -4,6 +4,8 @@ use byteorder::{LE, ReadBytesExt};
 
 use crate::MilesError;
 
+pub mod mbnk;
+
 #[derive(Debug)]
 pub struct Controller { // 0x1C exactly...
     pub name_offset: u32, // string table(@0x10) offset
@@ -27,12 +29,50 @@ pub struct Controller { // 0x1C exactly...
 }
 
 #[derive(Debug)]
+pub struct Unk20 { // total size 0xB0
+    pub unk0: u32,
+    pub unk4: u32, // or u8?
+
+    pub unk8: u64,
+    //0x10 here
+
+    // ---
+
+    pub unk24: f32,
+    pub unk28: u16, // gets set to 0x70
+    // 0x2A here
+
+    pub unk40: u16,
+    // 0x42 here
+
+    pub unk50: f32, // db
+
+    pub unk70: u16,
+    // 0x72 here
+    
+    pub unk74: f32, // db
+    pub unk78: f32, // db
+    pub unk7c: f32,
+    // 0x80 here
+
+    pub unk8c: f32, // ampl of 0x78
+
+    pub unk90: f32, // ampl of unk50, epxf(unk50 * 0.115129) - DbToAmpl
+    pub unk94: u32, // gets set to unk98
+    pub unk98: u32,
+    // 0xA0 here
+
+    pub unkAD: u8,
+
+}
+
+#[derive(Debug)]
 pub struct MilesProject {
     // seeks, padded so you can do pointer replacement for easier access...
     pub controllers_seek: u32, // structs of size 0x1c
     pub string_table_offset: u32, // String table...
     pub unk18: u32,
-    pub unk20: u32,
+    pub unk20: u32, // structs of size 0xB0
     pub unk28: u32,
     pub unk30: u32,
     pub unk38: u32,
@@ -53,7 +93,7 @@ pub struct MilesProject {
 
     // ---
     pub controllers_num: u32, // count of some sort (struct of size 56 aka 0x38)
-    pub unk98: u32, // count of some sort
+    pub unk98: u32, // count of some sort (prolly unk20)
 
     // --- Parsed ---
     pub controllers_parsed: Vec<(Controller, String)>,
