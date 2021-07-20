@@ -317,7 +317,7 @@ impl BinkA {
                 while j < frame_len {
                     let mut jj = if bitstream.read_bool().unwrap() {
                         // RLE
-                        j * RLE_LENGTH_TABLE[bitstream.read_int::<usize>(4).unwrap()]*8
+                        j + RLE_LENGTH_TABLE[bitstream.read_int::<usize>(4).unwrap()]*8
                     } else {
                         // NO RLE
                         j + 8
@@ -332,7 +332,11 @@ impl BinkA {
                     if width == 0 {
                         j = jj;
                         // no need to zero coeffs???
-                        todo!();
+                        //todo!();
+                        while bands[k as usize]*2 < j {
+                            q = quants[k as usize];
+                            k += 1;
+                        }
                     } else {
                         while j < jj {
                             if bands[k as usize]*2 == i {
