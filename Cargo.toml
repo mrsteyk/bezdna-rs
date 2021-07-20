@@ -4,4 +4,6 @@ members = [
     "debug_parse",
     "rpak",
     "rpak_debug",
+    "miles",
+    "miles_debug",
 ]
