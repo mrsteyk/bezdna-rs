@@ -1,4 +1,8 @@
-use std::{fs::{self, File}, io::BufReader, path::Path};
+use std::{
+    fs::{self, File},
+    io::BufReader,
+    path::Path,
+};
 
 extern crate miles;
 

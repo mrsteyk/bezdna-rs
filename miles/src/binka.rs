@@ -1,9 +1,15 @@
-use std::{cell::RefCell, cmp::min, io::{Cursor, Read, Seek}};
+use std::{
+    cell::RefCell,
+    cmp::min,
+    io::{Cursor, Read, Seek},
+};
 
 use bitbuffer::{BitReadBuffer, BitReadStream, LittleEndian};
 use byteorder::{ReadBytesExt, LE};
 
-use crate::MilesError;
+use crate::{MilesError, transforms::ddct};
+
+use crate::transforms;
 
 // hdr: u32 header is "1FCB"
 // unk4: u8 idk MUST BE NOT GREATER THAN 2, version mb?
@@ -288,15 +294,18 @@ impl BinkA {
         // this probably means that some channels are read like stereo and others are read like normal???
         for ii in 0..channels_half_ceil {
             let channels = v53[ii as usize];
-            let mut coeffs = [0f32; 2048];
+            let mut coeffs = [0f64; 2048];
             let mut quants = [0f32; 25];
-            for i in 0..channels {
 
+            let mut ddct_w = [0f64; 2560];
+            let mut fft4g_ip = [0i32; 48];
+
+            for i in 0..channels {
                 let bands = &bands[(ii + i) as usize];
 
                 let mut q = 0f32;
-                coeffs[0] = read_float(&mut bitstream);
-                coeffs[1] = read_float(&mut bitstream);
+                coeffs[0] = read_float(&mut bitstream) as f64;
+                coeffs[1] = read_float(&mut bitstream) as f64;
 
                 for i in 0..num_bands as usize {
                     let val: usize = bitstream.read_int(8).unwrap();
@@ -305,7 +314,7 @@ impl BinkA {
 
                 let mut k = 0;
                 for j in 0..num_bands {
-                    if bands[j as usize]*2 < 2 {
+                    if bands[j as usize] * 2 < 2 {
                         k = j;
                         q = quants[k as usize];
                     } else {
@@ -317,46 +326,62 @@ impl BinkA {
                 while j < frame_len {
                     let mut jj = if bitstream.read_bool().unwrap() {
                         // RLE
-                        j + RLE_LENGTH_TABLE[bitstream.read_int::<usize>(4).unwrap()]*8
+                        j + RLE_LENGTH_TABLE[bitstream.read_int::<usize>(4).unwrap()] * 8
                     } else {
                         // NO RLE
                         j + 8
                     };
 
-                    if jj>frame_len {
+                    if jj > frame_len {
                         jj = frame_len
                     }
 
                     let width: u32 = bitstream.read_int(4).unwrap();
-                    println!("jj {} | {} | {} | {} {}", jj, width, j, coeffs[0], coeffs[1]);
+                    println!(
+                        "jj {} | {} | {} | {} {}",
+                        jj, width, j, coeffs[0], coeffs[1]
+                    );
                     if width == 0 {
                         j = jj;
                         // no need to zero coeffs???
                         //todo!();
-                        while bands[k as usize]*2 < j {
+                        while bands[k as usize] * 2 < j {
                             q = quants[k as usize];
                             k += 1;
                         }
                     } else {
                         while j < jj {
-                            if bands[k as usize]*2 == i {
+                            if bands[k as usize] * 2 == i {
                                 q = quants[k as usize];
                                 k += 1;
                             }
                             let coeff: u32 = bitstream.read_int(width as usize).unwrap();
                             if coeff != 0 {
                                 if bitstream.read_bool().unwrap() {
-                                    coeffs[j as usize] = -q * coeff as f32;
+                                    coeffs[j as usize] = -q as f64 * coeff as f64;
                                 } else {
-                                    coeffs[j as usize] = q * coeff as f32;
+                                    coeffs[j as usize] = q as f64 * coeff as f64;
                                 }
                             } else {
-                                coeffs[j as usize] = 0f32;
+                                coeffs[j as usize] = 0f64;
                             }
 
                             j += 1;
                         }
                     }
+                }
+
+                // судя по тому что мне пришлось трэшнуть 2 бита - это дцт, а там пиздец...
+                ddct(
+                    frame_len as i32,
+                    1,
+                    coeffs.as_mut(),
+                    fft4g_ip.as_mut(),
+                    ddct_w.as_mut(),
+                );
+
+                for c in coeffs.iter_mut() {
+                    *c = *c * root as f64;
                 }
 
                 println!("{:?} {} {}", &coeffs[..frame_len as usize], frame_len, i);
