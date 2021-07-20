@@ -1,12 +1,13 @@
-use std::{fs::File, io::BufReader, path::Path};
+use std::{fs::{self, File}, io::BufReader, path::Path};
 
 extern crate miles;
 
 fn binka(path: &Path) {
-    let file = File::open(path).unwrap();
-    let mut cursor = std::io::Cursor::new(BufReader::new(file));
+    //let file = File::open(path).unwrap();
+    //let mut cursor = std::io::Cursor::new(BufReader::new(file));
+    let buf = fs::read(path).unwrap();
 
-    let binka = miles::binka::BinkA::read(cursor.get_mut());
+    let binka = miles::binka::BinkA::read(buf.as_slice());
     println!("{:#X?}", binka);
 }
 
