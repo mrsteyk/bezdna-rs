@@ -1,5 +1,8 @@
-
-use std::{any::Any, fmt::Debug, io::{Read, Seek, SeekFrom}};
+use std::{
+    any::Any,
+    fmt::Debug,
+    io::{Read, Seek, SeekFrom},
+};
 
 use byteorder::{ReadBytesExt, LE};
 
@@ -16,7 +19,7 @@ pub enum MilesError {
 
 #[derive(Debug)]
 pub enum MilesVersion {
-    TF2, // 0xD
+    TF2,  // 0xD
     Apex, // 0x28...
 }
 
@@ -26,17 +29,19 @@ impl From<std::io::Error> for MilesError {
     }
 }
 
-pub fn get_project_version<R: Read + Seek + ReadBytesExt>(cursor: &mut R) -> Result<u32, MilesError> {
+pub fn get_project_version<R: Read + Seek + ReadBytesExt>(
+    cursor: &mut R,
+) -> Result<u32, MilesError> {
     cursor.seek(SeekFrom::Start(0))?;
 
     let header = cursor.read_u32::<LE>()?;
     if header != 0x43_50_52_4A {
-        return Err(MilesError::InvalidHeader(header))
+        return Err(MilesError::InvalidHeader(header));
     }
 
     let version = cursor.read_u32::<LE>()?;
     if version != 0xD {
-        return Err(MilesError::UnknownVersion(version))
+        return Err(MilesError::UnknownVersion(version));
     }
 
     Ok(version)

@@ -212,9 +212,9 @@ impl DataTable {
 
             columns,
             column_names,
-            
+
             data,
-            
+
             unk18,
             unk24,
         })
