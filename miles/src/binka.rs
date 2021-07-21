@@ -387,12 +387,12 @@ impl BinkA {
                 //     ddct_w.as_mut(),
                 // );
 
-                unsafe { binding::ddct(frame_len as i32, 1, coeffs.as_mut_ptr(), fft4g_ip.as_mut_ptr(), ddct_w.as_mut_ptr()); };
+                //unsafe { binding::ddct(frame_len as i32, 1, coeffs.as_mut_ptr(), fft4g_ip.as_mut_ptr(), ddct_w.as_mut_ptr()); };
                 //unsafe { binding::rdft(frame_len as i32, -1, coeffs.as_mut_ptr(), fft4g_ip.as_mut_ptr(), ddct_w.as_mut_ptr()); };
 
-                let coeffs: Vec<f64> = coeffs.iter().map(|f| {
-                    f * root as f64
-                }).collect();
+                // let coeffs: Vec<f64> = coeffs.iter().map(|f| {
+                //     f * root as f64
+                // }).collect();
 
                 println!("{:?} {} {}", &coeffs[..frame_len as usize], frame_len, i);
             }
