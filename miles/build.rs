@@ -8,9 +8,7 @@ fn main() {
     println!("cargo:rerun-if-changed=shit.h");
     println!("cargo:rerun-if-changed=shit.c");
 
-    cc::Build::new()
-        .file("src/shit.c")
-        .compile("shit");
+    cc::Build::new().file("src/shit.c").compile("shit");
 
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for

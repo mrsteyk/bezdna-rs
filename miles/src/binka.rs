@@ -7,7 +7,7 @@ use std::{
 use bitbuffer::{BitReadBuffer, BitReadStream, LittleEndian};
 use byteorder::{ReadBytesExt, LE};
 
-use crate::{MilesError, binding, transforms::ddct};
+use crate::{binding, transforms::ddct, MilesError};
 
 use crate::transforms;
 
@@ -321,8 +321,8 @@ impl BinkA {
                 //         break;
                 //     }
                 // }
-                while bands[k]*2 < 2 {
-                    k+=1;
+                while bands[k] * 2 < 2 {
+                    k += 1;
                     q = quants[k as usize];
                 }
 

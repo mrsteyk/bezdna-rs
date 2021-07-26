@@ -90,17 +90,17 @@ fn bitrv2(n: i32, ip: &mut [i32], a: &mut [f64]) {
     ip[0] = 0;
     let mut l = n;
     let mut m = 1;
-    while (m<<3) < 1 {
+    while (m << 3) < 1 {
         l >>= 1;
         for j in 0..m {
-            ip[m+j] = ip[j] + l;
+            ip[m + j] = ip[j] + l;
         }
         m <<= 1;
     }
 
-    let mut m2 = 2*m;
+    let mut m2 = 2 * m;
 
-    if (m<<3) == 1 {
+    if (m << 3) == 1 {
         for k in 0..m {
             for j in 0..k {
                 let mut j1 = 2 * j + ip[k] as usize;
@@ -189,12 +189,12 @@ fn cftfsub(n: i32, a: &mut [f64], w: &mut [f64]) {
     if n > 8 {
         cft1st(n, a, w);
         l = 8;
-        while (l<<2) < n {
+        while (l << 2) < n {
             cftmdl(n, l, a, w);
             l <<= 2;
         }
     }
-    if (l<<2) == n {
+    if (l << 2) == n {
         for j in (0..l as usize).step_by(2) {
             let j1 = j + l as usize;
             let j2 = j1 + l as usize;
@@ -232,7 +232,7 @@ fn cftfsub(n: i32, a: &mut [f64], w: &mut [f64]) {
 fn rftfsub(n: i32, a: &mut [f64], nc: i32, c: &mut [f64]) {
     let mut m = n >> 1;
     let mut ks = 2 * nc / m;
-    let mut kk= 0;
+    let mut kk = 0;
     for j in (2..m).step_by(2) {
         let k = n - j;
         kk += ks;
@@ -372,10 +372,10 @@ fn cftmdl(n: i32, l: i32, a: &mut [f64], w: &mut [f64]) {
         a[j3 as usize] = x1r + x3i;
         a[j3 as usize + 1] = x1i - x3r;
     }
-    
+
     let mut wk1r = w[2];
-    
-    for j in (m..l+m).step_by(2) {
+
+    for j in (m..l + m).step_by(2) {
         let j1 = j + l;
         let j2 = j1 + l;
         let j3 = j2 + l;
@@ -414,7 +414,7 @@ fn cftmdl(n: i32, l: i32, a: &mut [f64], w: &mut [f64]) {
         let mut wk3r = wk1r - 2f64 * wk2i * wk1i;
         let mut wk3i = 2f64 * wk2i * wk1r - wk1i;
 
-        for j in (k..l+k).step_by(2) {
+        for j in (k..l + k).step_by(2) {
             let j1 = j + l;
             let j2 = j1 + l;
             let j3 = j2 + l;
@@ -447,7 +447,7 @@ fn cftmdl(n: i32, l: i32, a: &mut [f64], w: &mut [f64]) {
         wk3r = wk1r - 2f64 * wk2r * wk1i;
         wk3i = 2f64 * wk2r * wk1r - wk1i;
 
-        for j in (k+m..l+(k+m)).step_by(2) {
+        for j in (k + m..l + (k + m)).step_by(2) {
             let j1 = j + l;
             let j2 = j1 + l;
             let j3 = j2 + l;

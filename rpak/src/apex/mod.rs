@@ -274,6 +274,13 @@ impl RPakFile {
                 "dtbl" => Rc::new(
                     filetypes::dtbl::DataTable::ctor(&mut decompressed, &seeks, generic).unwrap(),
                 ),
+                "stgs" => Rc::new(
+                    filetypes::stgs::Settings::ctor(&mut decompressed, &seeks, generic).unwrap(),
+                ),
+                "stlt" => Rc::new(
+                    filetypes::stlt::SettingsLayout::ctor(&mut decompressed, &seeks, generic)
+                        .unwrap(),
+                ),
                 _ => Rc::new(generic),
             };
             decompressed.seek(SeekFrom::Start(bak_pos))?;

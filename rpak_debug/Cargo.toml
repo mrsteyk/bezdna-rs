@@ -8,3 +8,4 @@ license = "GPL-3.0-or-later"
 
 [dependencies]
 "rpak" = { path = "../rpak" }
+byteorder = "1" # TODO: remove?
