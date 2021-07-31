@@ -2,7 +2,7 @@
 
 using _DWORD = uint32_t;
 
-unsigned __int64 __fastcall hash_string(_DWORD* a1)
+extern "C" unsigned __int64 __fastcall hash_string(_DWORD* a1)
 {
     _DWORD* v1; // r8
     unsigned __int64 v2; // r10
@@ -111,7 +111,7 @@ using _DWORD = uint32_t;
 using _WORD = uint16_t;
 using _BYTE = uint8_t;
 
-char __fastcall decompress_rpak(__int64* a1, unsigned __int64 a2, unsigned __int64 a3)
+extern "C" char __fastcall decompress_rpak(__int64* a1, unsigned __int64 a2, unsigned __int64 a3)
 {
     unsigned __int64 v3; // r15
     char result; // al
@@ -459,8 +459,10 @@ LABEL_67:
     return result;
 }
 
-__int64 __fastcall get_decompressed_size(__int64 params, uint8_t* file_buf, __int64 some_magic_shit, __int64 file_size, __int64 off_without_header_qm, __int64 header_size)
+extern "C" __int64 __fastcall get_decompressed_size(__int64 params, uint8_t* file_buf, __int64 some_magic_shit, __int64 file_size, __int64 off_without_header_qm, __int64 header_size)
 {
+    //__int64 params = __int64(aparams);
+
     __int64 v8; // r9
     unsigned __int64 v9; // r11
     char v10; // r8

@@ -231,6 +231,128 @@ fn apex(rpak: &rpak::apex::RPakFile, guid_name: &HashMap<u64, String>) {
     }
 }
 
+fn tf2(rpak: &rpak::tf2::RPakFile) {
+    println!("TF2 mode");
+
+    let decomp = rpak.decompressed.borrow();
+    let mut cursor = std::io::Cursor::new(decomp.get_ref().as_slice());
+
+    let header = &rpak.header;
+    println!("{} | {}\n", header.part_rpak, header.is_compressed());
+
+    println!("{:#?}", header);
+
+    println!("StarPak: {}\n", rpak.starpak);
+
+    println!("Sections:");
+    for i in 0..rpak.sections.len() {
+        let sect = &rpak.sections[i];
+        println!("{}: {:?}", i, sect);
+    }
+
+    println!("\nDataChunks:");
+    for i in 0..rpak.data_chunks.len() {
+        let chunk = &rpak.data_chunks[i];
+        println!("{}: @{:016X} {:?}", i, rpak.seeks[i], chunk);
+    }
+
+    println!("\nFiles:");
+    for file in &rpak.files {
+        println!(
+            "{}.{:016X}.{:4} {:X?}",
+            match file.get_name() {
+                Some(v) => v,
+                _ => "",
+            },
+            file.get_guid(),
+            file.get_ext(),
+            file,
+        );
+
+        match file.get_ext() {
+            "matl" => {
+                let matl = file
+                    .as_any()
+                    .downcast_ref::<rpak::tf2::filetypes::matl::Material>()
+                    .unwrap();
+
+                println!(
+                    "\tDesc@{:016X} | {:016X}",
+                    matl.get_desc_off(),
+                    matl.generic.desc_size
+                );
+                println!("\tSurface Properties: {}", matl.surface_props);
+                println!("\tTextureRefs[{}]:", matl.texture_guids.len());
+                for i in 0..matl.texture_guids.len() {
+                    let ref_name = if matl.texture_guids.len() <= rpak::tf2::filetypes::matl::TEXTURE_REFS.len() {
+                        rpak::tf2::filetypes::matl::TEXTURE_REFS[i]
+                    } else {
+                        ""
+                    };
+                    println!("\t\t0x{:016X} {}", matl.texture_guids[i], ref_name);
+                }
+            }
+            // "ui" => {
+            //     let rui = file
+            //         .as_any()
+            //         .downcast_ref::<rpak::apex::filetypes::rui::RUI>()
+            //         .unwrap();
+
+            //     //println!("{}.{:016X}.ui | {}", rui.name, rui.get_guid(), real_name);
+
+            //     println!("\tDesc@{:016X}", rui.get_desc_off());
+            //     println!("\tUnk1@{:016X}", rui.unk1.2);
+            //     println!("\tUnk2@{:016X}", rui.unk2.2);
+
+            //     println!("\tArgClusters[{}]", rui.arg_clusters.len());
+            //     for cluster in &rui.arg_clusters {
+            //         println!("\t\t{:?}", cluster);
+            //     }
+            //     println!("\tArgs[{}]", rui.args.len());
+            //     for arg in &rui.args {
+            //         println!("\t\t{:?}", arg);
+            //     }
+            // }
+            // "dtbl" => {
+            //     let dtbl = file
+            //         .as_any()
+            //         .downcast_ref::<rpak::apex::filetypes::dtbl::DataTable>()
+            //         .unwrap();
+
+            //     print!("\t");
+
+            //     for column in &dtbl.column_names {
+            //         print!("{}\t", column);
+            //     }
+
+            //     println!();
+
+            //     for row in &dtbl.data {
+            //         print!("\t");
+            //         for col in row {
+            //             match col {
+            //                 ColumnData::String(v) => print!("\"{}\"", v),
+            //                 ColumnData::Asset(v) => print!("$\"{}\"", v),
+            //                 ColumnData::AssetNoPreCache(v) => print!("$\"{}\"", v),
+
+            //                 ColumnData::Bool(v) => print!("{}", v),
+            //                 ColumnData::Float(v) => print!("{}", v),
+            //                 ColumnData::Int(v) => print!("{}", v),
+
+            //                 ColumnData::Vector(v) => print!("{:?}", v),
+
+            //                 ColumnData::Invalid(v) => todo!("Invalid: {}", v),
+            //             }
+            //             print!("\t");
+            //         }
+            //         println!();
+            //     }
+            // }
+            _ => {}
+        }
+    }
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 {
@@ -276,8 +398,11 @@ fn main() {
                 if let Some(arpak) = drpak.downcast_ref::<rpak::apex::RPakFile>() {
                     apex(arpak, &guid_name)
                 } else {
-                    // tf2(drpak.downcast_ref::<rpak::tf2::RPakFile>().unwrap())
-                    todo!()
+                    if let Some(trpak) = drpak.downcast_ref::<rpak::tf2::RPakFile>() {
+                        tf2(trpak)
+                    } else {
+                        unimplemented!()
+                    }
                 }
             }
             Err(err) => {

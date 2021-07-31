@@ -63,7 +63,7 @@ impl crate::FileEntry for DataTable {
         self.generic.get_desc_off()
     }
     fn get_data_off(&self) -> Option<u64> {
-        None // we know for sure
+        self.generic.get_data_off()
     }
     fn get_desc_size(&self) -> usize {
         self.generic.get_desc_size()

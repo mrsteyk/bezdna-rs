@@ -150,9 +150,10 @@ pub fn parse_rpak<R: Read + Seek + ReadBytesExt>(
     cursor: &mut R,
 ) -> Result<Box<dyn RPakFile>, RPakError> {
     match get_rpak_version_cursor(cursor) {
-        RPakVersion::TF2 => {
-            todo!()
-        }
+        RPakVersion::TF2 => match tf2::RPakFile::read(cursor) {
+            Ok(file) => Ok(Box::new(file)),
+            Err(err) => Err(err),
+        },
         RPakVersion::APEX => match apex::RPakFile::read(cursor) {
             Ok(file) => Ok(Box::new(file)),
             Err(err) => Err(err),
