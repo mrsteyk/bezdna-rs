@@ -5,20 +5,8 @@ use byteorder::{ReadBytesExt, LE};
 use crate::{util::string_from_buf, FileEntry};
 
 pub const TEXTURE_REFS: [&str; 14] = [
-    "_col",
-    "_nml",
-    "_gls",
-    "_spc",
-    "_ilm",
-    "UNK5",
-    "UNK6",
-    "UNK7",
-    "_bm", // ???
-    "UNK9",
-    "UNK10",
-    "_ao",
-    "_cav",
-    "_opa"
+    "_col", "_nml", "_gls", "_spc", "_ilm", "UNK5", "UNK6", "UNK7", "_bm", // ???
+    "UNK9", "UNK10", "_ao", "_cav", "_opa",
 ];
 
 #[derive(Debug)]
@@ -82,9 +70,8 @@ impl Material {
         let _unk8 = cursor.read_u64::<LE>()?;
         assert_eq!(_unk8, 0, "pad8 isn't 0!");
 
-
         let guid = cursor.read_u64::<LE>()?;
-    
+
         let name_seek = {
             let id = cursor.read_u32::<LE>()?;
             let off = cursor.read_u32::<LE>()?;

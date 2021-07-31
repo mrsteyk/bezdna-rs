@@ -224,9 +224,9 @@ impl RPakFile {
                 // "txtr" => Rc::new(
                 //     filetypes::txtr::Texture::ctor(&mut decompressed, &seeks, generic).unwrap(),
                 // ),
-                "matl" => {
-                    Rc::new(filetypes::matl::Material::ctor(&mut decompressed, &seeks, generic).unwrap())
-                }
+                "matl" => Rc::new(
+                    filetypes::matl::Material::ctor(&mut decompressed, &seeks, generic).unwrap(),
+                ),
                 // "ui" => {
                 //     Rc::new(filetypes::rui::RUI::ctor(&mut decompressed, &seeks, generic).unwrap())
                 // }

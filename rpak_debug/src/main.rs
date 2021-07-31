@@ -143,9 +143,8 @@ fn apex(rpak: &rpak::apex::RPakFile, guid_name: &HashMap<u64, String>) {
 
                 // Rust Inc.
                 let early_files = &early.files;
-                if let Some(stlt_generic) = early_files
-                    .into_iter()
-                    .find(|x| x.get_guid() == stgs.stlt_hash)
+                if let Some(stlt_generic) =
+                    early_files.iter().find(|x| x.get_guid() == stgs.stlt_hash)
                 {
                     let stlt = stlt_generic
                         .as_any()
@@ -183,7 +182,7 @@ fn apex(rpak: &rpak::apex::RPakFile, guid_name: &HashMap<u64, String>) {
                         // next is the value...
 
                         let item = (&stlt.items)
-                            .into_iter()
+                            .iter()
                             .find(|x| x.unk4 == unk4)
                             .unwrap_or(defuakt);
                         match unk2 {
@@ -234,8 +233,8 @@ fn apex(rpak: &rpak::apex::RPakFile, guid_name: &HashMap<u64, String>) {
 fn tf2(rpak: &rpak::tf2::RPakFile) {
     println!("TF2 mode");
 
-    let decomp = rpak.decompressed.borrow();
-    let mut cursor = std::io::Cursor::new(decomp.get_ref().as_slice());
+    // let decomp = rpak.decompressed.borrow();
+    // let mut cursor = std::io::Cursor::new(decomp.get_ref().as_slice());
 
     let header = &rpak.header;
     println!("{} | {}\n", header.part_rpak, header.is_compressed());
@@ -284,7 +283,9 @@ fn tf2(rpak: &rpak::tf2::RPakFile) {
                 println!("\tSurface Properties: {}", matl.surface_props);
                 println!("\tTextureRefs[{}]:", matl.texture_guids.len());
                 for i in 0..matl.texture_guids.len() {
-                    let ref_name = if matl.texture_guids.len() <= rpak::tf2::filetypes::matl::TEXTURE_REFS.len() {
+                    let ref_name = if matl.texture_guids.len()
+                        <= rpak::tf2::filetypes::matl::TEXTURE_REFS.len()
+                    {
                         rpak::tf2::filetypes::matl::TEXTURE_REFS[i]
                     } else {
                         ""
