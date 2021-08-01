@@ -46,10 +46,17 @@ fn main() {
         println!("stem: {}", file_stem);
         let mut cursor = std::io::Cursor::new(BufReader::new(file));
 
-        let common_file =
-            File::open(path.parent().unwrap_or(Path::new(".")).join("common.rpak")).unwrap();
-        let mut common_cursor = std::io::Cursor::new(BufReader::new(common_file));
-        let common_rpak = rpak::parse_rpak(common_cursor.get_mut());
+        let common_file = File::open(path.parent().unwrap_or(Path::new(".")).join("common.rpak"));
+        let mut common_cursor = if let Ok(cf) = &common_file {
+            Some(std::io::Cursor::new(BufReader::new(cf)))
+        } else {
+            None
+        };
+        let common_rpak = if let Some(cr) = common_cursor.as_mut() {
+            Some(rpak::parse_rpak(cr.get_mut()).unwrap())
+        } else {
+            None
+        };
 
         match rpak::parse_rpak(cursor.get_mut()) {
             Ok(drpak) => {
@@ -102,7 +109,7 @@ fn main() {
                                         "Material has texture not in this RPak {:016X} | {}",
                                         guid, tf2_mat.name
                                     );
-                                    if let Ok(common) = common_rpak.as_ref() {
+                                    if let Some(common) = common_rpak.as_ref() {
                                         if let Some(common_texture) = common
                                             .get_files()
                                             .iter()
@@ -136,7 +143,7 @@ fn main() {
                                     continue;
                                 }
                                 let mut is_from_common = false;
-                                let texture_any = if let Ok(common) = &common_rpak {
+                                let texture_any = if let Some(common) = &common_rpak {
                                     if let Some(tmp) = files.iter().find(|x| x.get_guid() == *guid)
                                     {
                                         tmp
@@ -318,7 +325,16 @@ fn main() {
                                     )
                                     .to_owned(); //txtr.get_name().unwrap().replace("\\", "/");
                                 } else {
-                                    if let Some(txtr) = common_rpak.as_ref().unwrap().get_files().iter().find(|x| x.get_guid() == guid) {
+                                    if common_rpak.is_none() {
+                                        return "".to_owned();
+                                    }
+                                    if let Some(txtr) = common_rpak
+                                        .as_ref()
+                                        .unwrap()
+                                        .get_files()
+                                        .iter()
+                                        .find(|x| x.get_guid() == guid)
+                                    {
                                         return format!(
                                             "{}/{}.dds",
                                             folder_str,
