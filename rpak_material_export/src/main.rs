@@ -579,9 +579,7 @@ fn main() {
                                             data.extend_from_slice(include_bytes!("bc7u_hdr"));
                                         }
                                         "BC6H" => {
-                                            // TODO
-                                            eprintln!("Encountered BC6H! {}", texture.guid);
-                                            continue;
+                                            data.extend_from_slice(include_bytes!("bc6h_hdr"));
                                         }
                                         v => {
                                             panic!("We should've not been here... {}", v);
@@ -643,9 +641,7 @@ fn main() {
                                             data.extend_from_slice(include_bytes!("bc7u_hdr"));
                                         }
                                         "BC6H" => {
-                                            // TODO
-                                            eprintln!("Encountered BC6H! {}", texture.guid);
-                                            continue;
+                                            data.extend_from_slice(include_bytes!("bc6h_hdr"));
                                         }
                                         v => {
                                             unreachable!("We should've not been here... {}", v);
@@ -755,7 +751,7 @@ fn main() {
                                             return format!(
                                                 "{}/{}.dds",
                                                 folder_str,
-                                                tf2::filetypes::matl::TEXTURE_REFS_SE2[i]
+                                                apex::filetypes::matl::TEXTURE_REFS_SE2[i]
                                             )
                                             .to_owned();
                                         } else {
@@ -776,7 +772,7 @@ fn main() {
                                         return format!(
                                             "{}/{}.dds",
                                             folder_str,
-                                            tf2::filetypes::matl::TEXTURE_REFS_SE2[i]
+                                            apex::filetypes::matl::TEXTURE_REFS_SE2[i]
                                         )
                                         .to_owned();
                                     } else {
