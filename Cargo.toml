@@ -6,4 +6,5 @@ members = [
     "rpak_debug",
     "miles",
     "miles_debug",
+    "rpak_material_export",
 ]

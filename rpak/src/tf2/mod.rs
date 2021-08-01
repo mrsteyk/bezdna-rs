@@ -221,9 +221,9 @@ impl RPakFile {
             // mb move the actual parsing?
             let bak_pos = decompressed.stream_position()?;
             let spec: Rc<dyn crate::FileEntry> = match generic.extension.as_str() {
-                // "txtr" => Rc::new(
-                //     filetypes::txtr::Texture::ctor(&mut decompressed, &seeks, generic).unwrap(),
-                // ),
+                "txtr" => Rc::new(
+                    filetypes::txtr::Texture::ctor(&mut decompressed, &seeks, generic).unwrap(),
+                ),
                 "matl" => Rc::new(
                     filetypes::matl::Material::ctor(&mut decompressed, &seeks, generic).unwrap(),
                 ),

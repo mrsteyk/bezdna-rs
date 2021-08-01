@@ -9,6 +9,17 @@ pub const TEXTURE_REFS: [&str; 14] = [
     "UNK9", "UNK10", "_ao", "_cav", "_opa",
 ];
 
+pub const TEXTURE_REFS_SE2: [&str; 14] = [
+    "_color",  // Material Editor 2
+    "_normal", // Material Editor 2
+    "_rough",  // S&Box wiki
+    "_spc", // Like metallness but full rgb colour, didn't find it in MatEd2 even with complex shader, only a fucking slider
+    "_ilm", "UNK5", "UNK6", "UNK7", "_bm", // ???
+    "UNK9", "UNK10", "_ao",    // Material Editor 2
+    "_cav",   // Metallicness?
+    "_trans", // is trans correct? (based on the _opa meaning opacity for ?"decals"?) Quote: `transparency / translucency map`
+];
+
 #[derive(Debug)]
 pub struct Material {
     pub generic: super::FileGeneric,
@@ -33,8 +44,7 @@ impl crate::FileEntry for Material {
         self.generic.get_desc_off()
     }
     fn get_data_off(&self) -> Option<u64> {
-        assert_eq!(self.generic.get_data_off(), None);
-        None
+        Some(self.generic.get_data_off().unwrap())
     }
     fn get_desc_size(&self) -> usize {
         self.generic.get_desc_size()
