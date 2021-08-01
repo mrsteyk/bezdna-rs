@@ -209,12 +209,12 @@ impl Texture {
         let width = cursor.read_u16::<LE>()?;
         let height = cursor.read_u16::<LE>()?;
 
-        let unk14 = cursor.read_u16::<LE>()?;
+        let _unk14 = cursor.read_u16::<LE>()?;
 
         let texture_type = cursor.read_u16::<LE>()?;
 
-        let unk18 = cursor.read_u64::<LE>()?;
-        let unk20 = cursor.read_u8()?;
+        let _unk18 = cursor.read_u64::<LE>()?;
+        let _unk20 = cursor.read_u8()?;
 
         let rpak_mipmaps_num = cursor.read_u8()?;
         let starpak_mipmaps_num = cursor.read_u8()?;

@@ -71,7 +71,7 @@ const TEXTURE_SKIPS: [(u32, u32, u32); 64] = [
     (16, 5, 4),
 ];
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum MipMapType {
     RPak,
     StarPak,
