@@ -4,6 +4,8 @@ use byteorder::{ReadBytesExt, LE};
 
 use crate::FileEntry;
 
+pub use crate::tf2::filetypes::txtr::TEXTURE_ALGOS;
+
 const TEXTURE_SKIPS: [(u32, u32, u32); 64] = [
     (8, 4, 4),
     (8, 4, 4),
