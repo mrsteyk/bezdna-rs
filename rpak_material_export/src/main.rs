@@ -1,7 +1,6 @@
 use std::{
-    borrow::BorrowMut,
-    io::{Cursor, Read, Seek, SeekFrom},
-    os::windows::prelude::FileExt,
+    cmp::min,
+    io::{Read, Seek, SeekFrom},
 };
 #[forbid(unsafe_code)]
 use std::{fs::File, io::BufReader, path::Path};
@@ -95,7 +94,7 @@ fn main() {
                                     tf2_mat.texture_guids.len(),
                                     tf2_mat.name
                                 );
-                                continue;
+                                //continue;
                             }
                             let mut bad = false;
                             for guid in &tf2_mat.texture_guids {
@@ -153,8 +152,11 @@ fn main() {
 
                             std::fs::create_dir_all(mat_path).unwrap();
 
-                            // lets export all textures...
-                            for i in 0..tf2_mat.texture_guids.len() {
+                            // lets export NOT all textures...
+                            for i in 0..min(
+                                tf2_mat.texture_guids.len(),
+                                tf2::filetypes::matl::TEXTURE_REFS_SE2.len(),
+                            ) {
                                 let guid = &tf2_mat.texture_guids[i];
                                 if *guid == 0 {
                                     continue;
@@ -223,9 +225,9 @@ fn main() {
                                     }
 
                                     data[0xC..0xC + 4]
-                                        .copy_from_slice(&(mipmap.width as u32).to_le_bytes());
-                                    data[0x10..0x10 + 4]
                                         .copy_from_slice(&(mipmap.height as u32).to_le_bytes());
+                                    data[0x10..0x10 + 4]
+                                        .copy_from_slice(&(mipmap.width as u32).to_le_bytes());
                                     data[0x14..0x14 + 4]
                                         .copy_from_slice(&(mipmap.size as u32).to_le_bytes());
 
@@ -274,9 +276,9 @@ fn main() {
                                     }
 
                                     data[0xC..0xC + 4]
-                                        .copy_from_slice(&(mipmap.width as u32).to_le_bytes());
-                                    data[0x10..0x10 + 4]
                                         .copy_from_slice(&(mipmap.height as u32).to_le_bytes());
+                                    data[0x10..0x10 + 4]
+                                        .copy_from_slice(&(mipmap.width as u32).to_le_bytes());
                                     data[0x14..0x14 + 4]
                                         .copy_from_slice(&(mipmap.size as u32).to_le_bytes());
 
@@ -551,8 +553,12 @@ fn main() {
                                         .unwrap();
                                     let decomp = match is_from_where {
                                         FromRPak::Current => drpak.get_decompressed(),
-                                        FromRPak::Common => common_rpak.as_ref().unwrap().get_decompressed(),
-                                        FromRPak::Early => early_rpak.as_ref().unwrap().get_decompressed(), 
+                                        FromRPak::Common => {
+                                            common_rpak.as_ref().unwrap().get_decompressed()
+                                        }
+                                        FromRPak::Early => {
+                                            early_rpak.as_ref().unwrap().get_decompressed()
+                                        }
                                     };
 
                                     let mut data =
@@ -583,9 +589,9 @@ fn main() {
                                     }
 
                                     data[0xC..0xC + 4]
-                                        .copy_from_slice(&(mipmap.width as u32).to_le_bytes());
-                                    data[0x10..0x10 + 4]
                                         .copy_from_slice(&(mipmap.height as u32).to_le_bytes());
+                                    data[0x10..0x10 + 4]
+                                        .copy_from_slice(&(mipmap.width as u32).to_le_bytes());
                                     data[0x14..0x14 + 4]
                                         .copy_from_slice(&(mipmap.size as u32).to_le_bytes());
 
@@ -645,9 +651,9 @@ fn main() {
                                     }
 
                                     data[0xC..0xC + 4]
-                                        .copy_from_slice(&(mipmap.width as u32).to_le_bytes());
-                                    data[0x10..0x10 + 4]
                                         .copy_from_slice(&(mipmap.height as u32).to_le_bytes());
+                                    data[0x10..0x10 + 4]
+                                        .copy_from_slice(&(mipmap.width as u32).to_le_bytes());
                                     data[0x14..0x14 + 4]
                                         .copy_from_slice(&(mipmap.size as u32).to_le_bytes());
 

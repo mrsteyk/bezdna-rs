@@ -8,6 +8,8 @@ pub const TEXTURE_REFS: [&str; 14] = [
     "_col", "_nml", "_gls", "_spc", "_ilm", "UNK5", "UNK6", "UNK7", "_bm", // ???
     "UNK9", "UNK10", "_ao", "_cav", "_opa",
 ];
+// UNK14 - base colour for a decal
+// UNK16 - mask for a decal (apply _col to UNK14)
 
 pub const TEXTURE_REFS_SE2: [&str; 14] = [
     "_color",  // Material Editor 2
