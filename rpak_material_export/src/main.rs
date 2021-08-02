@@ -215,9 +215,7 @@ fn main() {
                                             data.extend_from_slice(include_bytes!("bc7u_hdr"));
                                         }
                                         "BC6H" => {
-                                            // TODO
-                                            eprintln!("Encountered BC6H! {}", texture.name);
-                                            continue;
+                                            data.extend_from_slice(include_bytes!("bc6h_hdr"));
                                         }
                                         v => {
                                             panic!("We should've not been here... {}", v);
@@ -268,9 +266,7 @@ fn main() {
                                             data.extend_from_slice(include_bytes!("bc7u_hdr"));
                                         }
                                         "BC6H" => {
-                                            // TODO
-                                            eprintln!("Encountered BC6H! {}", texture.name);
-                                            continue;
+                                            data.extend_from_slice(include_bytes!("bc6h_hdr"));
                                         }
                                         v => {
                                             unreachable!("We should've not been here... {}", v);
@@ -493,7 +489,7 @@ fn main() {
                                     Current,
                                     Common,
                                     Early,
-                                };
+                                }
                                 let mut is_from_where = FromRPak::Current;
                                 let texture_any = if let Some(common) = &common_rpak {
                                     if let Some(tmp) = files.iter().find(|x| x.get_guid() == *guid)
