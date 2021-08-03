@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate bitflags;
+
 use byteorder::{ReadBytesExt, LE};
 use std::io::{ErrorKind, Read, Seek, SeekFrom};
 

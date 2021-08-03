@@ -25,6 +25,7 @@ pub struct StudioBoneT {
 
     pub quat_align: [f32; 4], // 0x90
 
+    // there should be extra 3 floats???
     pub flags: u32, // 0xA0
 
     pub procedural_rule_type: i32,  // 0xA4
@@ -42,12 +43,63 @@ pub struct StudioBoneT {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ProceduralRule {
+    Invalid(i32),
     None,
     AxisInterp, // 1 TODO
     QuatInterp, // 2 TODO
     AimAtBone,  // 3 TODO
     AimAttach,  // 4 TODO
     Jiggle,     // 5 TODO
+}
+
+bitflags! {
+    #[derive(Default)]
+    pub struct Contents: u32 {
+        const EMPTY = 0x0;
+        const SOLID = 0x1;
+        const WINDOW = 0x2;
+        const AUX = 0x4;
+        const GRATE = 0x8;
+        const SLIME = 0x10;
+        const WATER = 0x20;
+        const MIST = 0x40;
+        const OPAQUE = 0x80;
+
+        const ALL_VISIBLE = 0xFF;
+
+        const TESTFOGVOLUME = 0x100;
+
+        const UNUSED5 = 0x200;
+        const UNUSED6 = 0x4000;
+
+        const TEAM1 = 0x800;
+        const TEAM2 = 0x1000;
+
+        const IGNORE_NODRAW_OPAQUE = 0x2000;
+
+        const MOVEABLE = 0x4000;
+
+        const AREA_PORTAL = 0x8000;
+
+        const PLAYER_CLIP = 0x10000;
+        const MONSTER_CLIP = 0x20000;
+
+        const CURRENT_0 = 0x40000;
+        const CURRENT_90 = 0x80000;
+        const CURRENT_180 = 0x100000;
+        const CURRENT_270 = 0x200000;
+        const CURRENT_UP = 0x400000;
+        const CURRENT_DOWN = 0x800000;
+
+        const ORIGIN = 0x1000000;
+        const MONSTER = 0x2000000;
+        const DEBRIS = 0x4000000;
+        const DETAIL = 0x8000000;
+        const TRANSLUCENT = 0x10000000;
+        const LADDER = 0x20000000;
+
+        const HITBOX = 0x40000000;
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -70,18 +122,22 @@ pub struct StudioBone {
 
     pub quat_align: Quat,
 
+    pub wtf: [f32; 3],
+
     pub flags: u32,
 
-    pub procedural_rule: ProceduralRule,
+    // wtf x2
+    //pub procedural_rule: ProceduralRule,
+    pub procedural_rule_type: u32,
     pub procedural_rule_index: i32,
 
     pub physics_bone_index: i32, // ???
 
     pub surface_prop_name: String,
 
-    pub contents: i32,
+    pub contents: Contents,
 
-    pub idk: [i32; 15],
+    pub idk: [i32; 12],
 }
 
 impl StudioBone {
@@ -127,34 +183,41 @@ impl StudioBone {
         let mut quat_align = [0f32; 4];
         cursor.read_f32_into::<LE>(&mut quat_align)?;
 
+        // let wtf = cursor.read_f32::<LE>()?;
+        // // debug-ish shit
+        // cursor.read_f32::<LE>()?;
+        // cursor.read_f32::<LE>()?;
+        let mut wtf = [0f32; 3];
+        cursor.read_f32_into::<LE>(&mut wtf)?;
+
         let flags = cursor.read_u32::<LE>()?;
 
-        let procedural_rule_type = cursor.read_i32::<LE>()?;
+        let procedural_rule_type = cursor.read_u32::<LE>()?;
         let procedural_rule_index = cursor.read_i32::<LE>()?;
-        let procedural_rule = match procedural_rule_type {
-            0 => ProceduralRule::None,
-            1 => ProceduralRule::AxisInterp,
-            2 => ProceduralRule::QuatInterp,
-            3 => ProceduralRule::AimAtBone,
-            4 => ProceduralRule::AimAttach,
-            5 => ProceduralRule::Jiggle,
-            v => panic!("Invalid procedural type {}", v),
-        };
+        // let procedural_rule = match procedural_rule_type {
+        //     0 => ProceduralRule::None,
+        //     1 => ProceduralRule::AxisInterp,
+        //     2 => ProceduralRule::QuatInterp,
+        //     3 => ProceduralRule::AimAtBone,
+        //     4 => ProceduralRule::AimAttach,
+        //     5 => ProceduralRule::Jiggle,
+        //     v => ProceduralRule::Invalid(v), //panic!("Invalid procedural type {}", v),
+        // };
 
         let physics_bone_index = cursor.read_i32::<LE>()?;
 
         let surface_prop_name_index = cursor.read_i32::<LE>()?;
 
-        let contents = cursor.read_i32::<LE>()?;
+        let contents = cursor.read_u32::<LE>()?;
 
-        let mut idk = [0i32; 15];
+        let mut idk = [0i32; 12];
         cursor.read_i32_into::<LE>(&mut idk)?;
 
-        assert_eq!(
-            cursor.stream_position()? - start_reading,
-            0xf4,
-            "StudioBone read missmatch"
-        );
+        // assert_eq!(
+        //     cursor.stream_position()? - start_reading,
+        //     0xf4,
+        //     "StudioBone read missmatch"
+        // );
 
         let name = if bone_name_index != 0 {
             cursor.seek(SeekFrom::Start(start_reading + bone_name_index as u64))?;
@@ -191,16 +254,19 @@ impl StudioBone {
 
             quat_align,
 
+            wtf,
+
             flags,
 
-            procedural_rule,
+            procedural_rule_type,
             procedural_rule_index,
 
             physics_bone_index,
 
             surface_prop_name,
 
-            contents,
+            // What the actual fuck is this
+            contents: unsafe { Contents::from_bits_unchecked(contents) },
 
             idk,
         })
