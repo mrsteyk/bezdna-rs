@@ -213,11 +213,11 @@ impl StudioBone {
         let mut idk = [0i32; 12];
         cursor.read_i32_into::<LE>(&mut idk)?;
 
-        // assert_eq!(
-        //     cursor.stream_position()? - start_reading,
-        //     0xf4,
-        //     "StudioBone read missmatch"
-        // );
+        assert_eq!(
+            cursor.stream_position()? - start_reading,
+            0xf4,
+            "StudioBone read missmatch"
+        );
 
         let name = if bone_name_index != 0 {
             cursor.seek(SeekFrom::Start(start_reading + bone_name_index as u64))?;
