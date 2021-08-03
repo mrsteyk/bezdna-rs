@@ -15,7 +15,7 @@ pub use hitbox::{StudioHitbox, StudioHitboxSet};
 //use hitbox::StudioHitboxSetT;
 
 mod bone;
-pub use bone::StudioBone;
+pub use bone::{ProceduralRule, StudioBone};
 //use bone::StudioBoneT;
 
 mod attachment;

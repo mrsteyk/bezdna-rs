@@ -66,8 +66,8 @@ pub struct StudioHdrT {
 
     // -- skip to 0x164
     pub const_directional_light_dot: u8, // 0x164
-    pub root_lod: u8,              // 0x165
-    pub num_allowed_root_lods: u8, // 0x166
+    pub root_lod: u8,                    // 0x165
+    pub num_allowed_root_lods: u8,       // 0x166
 
     // -- skip to 0x17c
     pub maya_name_index: u32, // 0x17c ???

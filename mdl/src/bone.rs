@@ -10,36 +10,44 @@ use crate::se::*;
 pub struct StudioBoneT {
     // I don't recall the actual name...
     pub sznameindex: i32, // 0x0
-    pub parent: i32, // 0x4, -1 - none
+    pub parent: i32,      // 0x4, -1 - none
 
     pub bone_controller: [i32; 6], // 0x8, -1 - none
 
-    pub pos: [f32; 3], // 0x20
+    pub pos: [f32; 3],  // 0x20
     pub quat: [f32; 4], // 0x2c
-    pub rot: [f32; 3], // 0x3c
+    pub rot: [f32; 3],  // 0x3c
 
     pub pos_scale: [f32; 3], // 0x48
     pub rot_scale: [f32; 3], // 0x54
     // ???
-
     pub pos2bone: [[f32; 3]; 4], // 0x60
-    
+
     pub quat_align: [f32; 4], // 0x90
 
     pub flags: u32, // 0xA0
 
-    pub procedural_rule_type: i32, // 0xA4
+    pub procedural_rule_type: i32,  // 0xA4
     pub procedural_rule_index: i32, // 0xA8
-    
+
     pub physics_bone_index: i32, // 0xAC
 
     pub surface_prop_name_index: i32, // 0xB0
-    
+
     pub contents: i32, // 0xB4
 
     pub idk: [i32; 15],
-
     // size MUST be 0xf4 if to trust myself...
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum ProceduralRule {
+    None,
+    AxisInterp, // 1 TODO
+    QuatInterp, // 2 TODO
+    AimAtBone,  // 3 TODO
+    AimAttach,  // 4 TODO
+    Jiggle,     // 5 TODO
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -48,7 +56,7 @@ pub struct StudioBone {
 
     pub name: String,
     pub parent: i32, // index makes sense for exporting ngl
-    
+
     pub bone_controller: [i32; 6],
 
     pub pos: Vec3,
@@ -59,18 +67,18 @@ pub struct StudioBone {
     pub rot_scale: Vec3,
 
     pub pos2bone: [[f32; 3]; 4],
-    
+
     pub quat_align: Quat,
 
     pub flags: u32,
 
-    pub procedural_rule_type: i32,
+    pub procedural_rule: ProceduralRule,
     pub procedural_rule_index: i32,
-    
+
     pub physics_bone_index: i32, // ???
 
     pub surface_prop_name: String,
-    
+
     pub contents: i32,
 
     pub idk: [i32; 15],
@@ -123,6 +131,15 @@ impl StudioBone {
 
         let procedural_rule_type = cursor.read_i32::<LE>()?;
         let procedural_rule_index = cursor.read_i32::<LE>()?;
+        let procedural_rule = match procedural_rule_type {
+            0 => ProceduralRule::None,
+            1 => ProceduralRule::AxisInterp,
+            2 => ProceduralRule::QuatInterp,
+            3 => ProceduralRule::AimAtBone,
+            4 => ProceduralRule::AimAttach,
+            5 => ProceduralRule::Jiggle,
+            v => panic!("Invalid procedural type {}", v),
+        };
 
         let physics_bone_index = cursor.read_i32::<LE>()?;
 
@@ -133,7 +150,11 @@ impl StudioBone {
         let mut idk = [0i32; 15];
         cursor.read_i32_into::<LE>(&mut idk)?;
 
-        assert_eq!(cursor.stream_position()? - start_reading, 0xf4, "StudioBone read missmatch");
+        assert_eq!(
+            cursor.stream_position()? - start_reading,
+            0xf4,
+            "StudioBone read missmatch"
+        );
 
         let name = if bone_name_index != 0 {
             cursor.seek(SeekFrom::Start(start_reading + bone_name_index as u64))?;
@@ -143,7 +164,9 @@ impl StudioBone {
         };
 
         let surface_prop_name = if surface_prop_name_index != 0 {
-            cursor.seek(SeekFrom::Start(start_reading + surface_prop_name_index as u64))?;
+            cursor.seek(SeekFrom::Start(
+                start_reading + surface_prop_name_index as u64,
+            ))?;
             util::string_from_buf(cursor)
         } else {
             "".to_owned()
@@ -170,7 +193,7 @@ impl StudioBone {
 
             flags,
 
-            procedural_rule_type,
+            procedural_rule,
             procedural_rule_index,
 
             physics_bone_index,
