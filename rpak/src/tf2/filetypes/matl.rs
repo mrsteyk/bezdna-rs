@@ -30,9 +30,15 @@ pub const TEXTURE_REFS_SE2: [&str; 20] = [
     "_normal", // Material Editor 2
     "_rough",  // S&Box wiki
     "_spc", // Like metallness but full rgb colour, didn't find it in MatEd2 even with complex shader, only a fucking slider
-    "_ilm", "UNK5", "UNK6", "UNK7", "_bm", // ???
-    "UNK9", "UNK10", "_ao",    // Material Editor 2
-    "_cav",   // Metallicness?
+    "_ilm",
+    "UNK5",
+    "UNK6",
+    "UNK7",
+    "_bm", // ???
+    "UNK9",
+    "UNK10",
+    "_ao",              // Material Editor 2
+    "_cav",             // Metallicness?
     "_trans", // is trans correct? (based on the _opa meaning opacity for ?"decals"?) Quote: `transparency / translucency map`
     "_decal_col_ilm", // UNK14, temp
     "_decal_normal", // UNK15

@@ -27,10 +27,10 @@ struct MaterialJson<'a> {
     // UNK14
     decal_col: String,
     illum2: String,
-    
+
     // >=UNK15
     decal_normal: String, // 15
-    decal_mask: String, // 16
+    decal_mask: String,   // 16
     material_postprocessing: String,
     distort_normal: String,
     distort_normal2: String,
@@ -248,7 +248,11 @@ fn main() {
                                     );
 
                                     std::fs::write(
-                                        material_out_path.join(prefix_file(&tf2_mat.texture_guids, folder_str, i)),
+                                        material_out_path.join(prefix_file(
+                                            &tf2_mat.texture_guids,
+                                            folder_str,
+                                            i,
+                                        )),
                                         data,
                                     )
                                     .unwrap();
@@ -320,7 +324,11 @@ fn main() {
                                     };
 
                                     std::fs::write(
-                                        material_out_path.join(prefix_file(&tf2_mat.texture_guids, folder_str, i)),
+                                        material_out_path.join(prefix_file(
+                                            &tf2_mat.texture_guids,
+                                            folder_str,
+                                            i,
+                                        )),
                                         data,
                                     )
                                     .unwrap();
@@ -336,7 +344,8 @@ fn main() {
                                 }
                                 let guid = tf2_mat.texture_guids[i];
                                 if let Some(txtr) = files.iter().find(|x| x.get_guid() == guid) {
-                                    return prefix_file(&tf2_mat.texture_guids, folder_str, i); //txtr.get_name().unwrap().replace("\\", "/");
+                                    return prefix_file(&tf2_mat.texture_guids, folder_str, i);
+                                //txtr.get_name().unwrap().replace("\\", "/");
                                 } else {
                                     if common_rpak.is_none() {
                                         return "".to_owned();
@@ -369,7 +378,11 @@ fn main() {
                             let opa = find_texture(13);
 
                             // UNK14
-                            let (decal_col, illum2) = if ((tf2_mat.texture_guids.len() > 14) && tf2_mat.texture_guids[15] != 0) || ((tf2_mat.texture_guids.len() > 15) && tf2_mat.texture_guids[16] != 0) {
+                            let (decal_col, illum2) = if ((tf2_mat.texture_guids.len() > 15)
+                                && tf2_mat.texture_guids[15] != 0)
+                                || ((tf2_mat.texture_guids.len() > 16)
+                                    && tf2_mat.texture_guids[16] != 0)
+                            {
                                 (find_texture(14), "".to_owned())
                             } else {
                                 ("".to_owned(), find_texture(14))
@@ -827,10 +840,10 @@ fn main() {
                                 // UNK14
                                 decal_col: "".to_owned(),
                                 illum2: "".to_owned(),
-                                
+
                                 // >=UNK15
                                 decal_normal: "".to_owned(), // 15
-                                decal_mask: "".to_owned(), // 16
+                                decal_mask: "".to_owned(),   // 16
                                 material_postprocessing: "".to_owned(),
                                 distort_normal: "".to_owned(),
                                 distort_normal2: "".to_owned(),
@@ -853,7 +866,7 @@ fn prefix_file(guids: &Vec<u64>, folder_str: &str, i: usize) -> String {
         "{}/{}.dds",
         folder_str,
         if i == 14 {
-            if ((guids.len()>14) && guids[15] != 0) || ((guids.len()>15) && guids[16] != 0) {
+            if ((guids.len() > 15) && guids[15] != 0) || ((guids.len() > 16) && guids[16] != 0) {
                 "_decal_col"
             } else {
                 "_ilm2"
