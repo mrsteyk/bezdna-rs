@@ -16,9 +16,9 @@ pub const TEXTURE_REFS: [&str; 14] = [
 
 /*
 // wat de fuq they r doin' ova dere
-if UNK16:
+if UNK15 or UNK16:
     UNK14 = colour
-elif UNK17:
+else:
     UNK14 = illum
 */
 
