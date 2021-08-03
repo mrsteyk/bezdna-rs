@@ -8,8 +8,19 @@ pub const TEXTURE_REFS: [&str; 14] = [
     "_col", "_nml", "_gls", "_spc", "_ilm", "UNK5", "UNK6", "UNK7", "_bm", // ???
     "UNK9", "UNK10", "_ao", "_cav", "_opa",
 ];
-// UNK14 - base colour for a decal
+// UNK14 - base colour for a decal/?detail? ??? sometimes illumination???
+// UNK15 - water normal on a fucking rock??? or rock jagged granite detail??? detail's normal without even UNK14 AND UNK16 sometimes???
 // UNK16 - mask for a decal (apply _col to UNK14)
+// UNK17 - distortion AO???
+// UNK18 - distortion normal
+
+/*
+// wat de fuq they r doin' ova dere
+if UNK16:
+    UNK14 = colour
+elif UNK17:
+    UNK14 = illum
+*/
 
 pub const TEXTURE_REFS_SE2: [&str; 14] = [
     "_color",  // Material Editor 2
