@@ -64,8 +64,8 @@ pub struct StudioHdrT {
 
     pub local_attachment_desc: DescType, // 0xF4, 0xF8
 
+    // -- skip to 0x164
     pub const_directional_light_dot: u8, // 0x164
-    // -- skip to 0x165
     pub root_lod: u8,              // 0x165
     pub num_allowed_root_lods: u8, // 0x166
 

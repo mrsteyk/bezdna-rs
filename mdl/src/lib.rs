@@ -1,6 +1,8 @@
 use byteorder::{ReadBytesExt, LE};
 use std::io::{ErrorKind, Read, Seek, SeekFrom};
 
+pub mod se;
+
 mod studiohdr;
 use studiohdr::StudioHdrT;
 
