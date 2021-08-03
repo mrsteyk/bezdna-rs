@@ -86,7 +86,7 @@ impl StudioHitboxSet {
         let num_hitboxes = cursor.read_u32::<LE>()?;
         let hitboxindex = cursor.read_i32::<LE>()?;
 
-        let mut hitboxes: Vec<StudioHitbox> = Vec::new();
+        let mut hitboxes = Vec::<StudioHitbox>::with_capacity(num_hitboxes as usize);
 
         let name: String;
         cursor.seek(SeekFrom::Start(start_reading + szhitboxnameindex as u64))?;

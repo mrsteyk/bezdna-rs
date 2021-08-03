@@ -33,9 +33,12 @@ mod mesh;
 pub use mesh::StudioMesh;
 //use mesh::StudioMeshT;
 
+pub mod vtx;
+pub mod vvd;
+
 mod util;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq)]
 pub struct StudioMdl {
     header: (StudioHdrT, u64),
 
@@ -44,6 +47,12 @@ pub struct StudioMdl {
     pub hitbox_sets: Vec<StudioHitboxSet>,
     pub bones: Vec<StudioBone>,
     pub local_attachments: Vec<StudioAttachment>,
+
+    pub animation_only: bool,
+
+    // Parsed embeds
+    pub vtx: vtx::VtxFile,
+    pub vvd: vvd::VvdFile,
 }
 
 impl StudioMdl {
@@ -133,7 +142,7 @@ impl StudioMdl {
 
         // TODO: parse body parts and shit...
 
-        let mut body_parts: Vec<StudioBodyPart> = Vec::new();
+        let mut body_parts = Vec::<StudioBodyPart>::with_capacity(hdr.body_part_desc.0 as usize);
         for i in 0..hdr.body_part_desc.0 {
             cursor.seek(SeekFrom::Start(
                 start_reading + hdr.body_part_desc.1 as u64 + (0x10 * i) as u64,
@@ -141,7 +150,7 @@ impl StudioMdl {
             body_parts.push(StudioBodyPart::read(cursor)?);
         }
 
-        let mut hitbox_sets: Vec<StudioHitboxSet> = Vec::new();
+        let mut hitbox_sets = Vec::<StudioHitboxSet>::with_capacity(hdr.hitbox_set_desc.0 as usize);
         for i in 0..hdr.hitbox_set_desc.0 {
             cursor.seek(SeekFrom::Start(
                 start_reading + hdr.hitbox_set_desc.1 as u64 + (0xC * i) as u64,
@@ -149,7 +158,7 @@ impl StudioMdl {
             hitbox_sets.push(StudioHitboxSet::read(cursor)?);
         }
 
-        let mut bones: Vec<StudioBone> = Vec::new();
+        let mut bones = Vec::<StudioBone>::with_capacity(hdr.bone_desc.0 as usize);
         for i in 0..hdr.bone_desc.0 {
             cursor.seek(SeekFrom::Start(
                 start_reading + hdr.bone_desc.1 as u64 + (0xf4 * i) as u64,
@@ -157,13 +166,28 @@ impl StudioMdl {
             bones.push(StudioBone::read(cursor)?);
         }
 
-        let mut local_attachments: Vec<StudioAttachment> = Vec::new();
+        let mut local_attachments =
+            Vec::<StudioAttachment>::with_capacity(hdr.local_attachment_desc.0 as usize);
         for i in 0..hdr.local_attachment_desc.0 {
             cursor.seek(SeekFrom::Start(
                 start_reading + hdr.local_attachment_desc.1 as u64 + (0x5c * i) as u64,
             ))?;
             local_attachments.push(StudioAttachment::read(cursor)?);
         }
+
+        let vtx = {
+            cursor.seek(SeekFrom::Start(
+                start_reading + hdr.texture_file_offset as u64,
+            ))?;
+            vtx::VtxFile::read(cursor)?
+        };
+
+        let vvd = {
+            cursor.seek(SeekFrom::Start(
+                start_reading + hdr.vertex_file_offset as u64,
+            ))?;
+            vvd::VvdFile::read(cursor)?
+        };
 
         Ok(StudioMdl {
             header: (hdr, start_reading),
@@ -172,6 +196,11 @@ impl StudioMdl {
             hitbox_sets,
             bones,
             local_attachments,
+
+            animation_only: (hdr.body_part_desc.0 == 0) && (hdr.local_seq_desc.0 > 0),
+
+            vtx,
+            vvd,
         })
     }
 }

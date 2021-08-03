@@ -37,13 +37,8 @@ impl StudioAttachment {
         let mut local = [0.0f32; 12];
         cursor.read_f32_into::<LE>(&mut local)?;
 
-        let name: String;
         cursor.seek(SeekFrom::Start(start_reading + snameindex as u64))?;
-        unsafe {
-            let mut tmp_name: [u8; 260] = std::mem::zeroed();
-            cursor.read_exact(&mut tmp_name)?;
-            name = util::str_from_u8_nul_utf8_unchecked(&tmp_name).to_owned();
-        }
+        let name = util::string_from_buf(cursor);
 
         Ok(StudioAttachment {
             start_pos: start_reading,

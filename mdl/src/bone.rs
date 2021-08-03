@@ -5,6 +5,8 @@ use crate::util;
 
 use crate::se::*;
 
+const WTF_SIZE: usize = 3;
+
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct StudioBoneT {
@@ -43,7 +45,7 @@ pub struct StudioBoneT {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ProceduralRule {
-    Invalid(i32),
+    Invalid(u32),
     None,
     AxisInterp, // 1 TODO
     QuatInterp, // 2 TODO
@@ -122,7 +124,7 @@ pub struct StudioBone {
 
     pub quat_align: Quat,
 
-    pub wtf: [f32; 3],
+    pub wtf: [f32; WTF_SIZE],
 
     pub flags: u32,
 
@@ -187,22 +189,30 @@ impl StudioBone {
         // // debug-ish shit
         // cursor.read_f32::<LE>()?;
         // cursor.read_f32::<LE>()?;
-        let mut wtf = [0f32; 3];
+
+        // TODO:
+        //  ____ ___ ____   _____ _  _____   _____ ___  ____   ___
+        // | __ )_ _/ ___| |  ___/ \|_   _| |_   _/ _ \|  _ \ / _ \
+        // |  _ \| | |  _  | |_ / _ \ | |     | || | | | | | | | | |
+        // | |_) | | |_| | |  _/ ___ \| |     | || |_| | |_| | |_| |
+        // |____/___\____| |_|/_/   \_\_|     |_| \___/|____/ \___/
+
+        let mut wtf = [0f32; WTF_SIZE];
         cursor.read_f32_into::<LE>(&mut wtf)?;
 
         let flags = cursor.read_u32::<LE>()?;
 
         let procedural_rule_type = cursor.read_u32::<LE>()?;
         let procedural_rule_index = cursor.read_i32::<LE>()?;
-        // let procedural_rule = match procedural_rule_type {
-        //     0 => ProceduralRule::None,
-        //     1 => ProceduralRule::AxisInterp,
-        //     2 => ProceduralRule::QuatInterp,
-        //     3 => ProceduralRule::AimAtBone,
-        //     4 => ProceduralRule::AimAttach,
-        //     5 => ProceduralRule::Jiggle,
-        //     v => ProceduralRule::Invalid(v), //panic!("Invalid procedural type {}", v),
-        // };
+        let _procedural_rule = match procedural_rule_type {
+            0 => ProceduralRule::None,
+            1 => ProceduralRule::AxisInterp,
+            2 => ProceduralRule::QuatInterp,
+            3 => ProceduralRule::AimAtBone,
+            4 => ProceduralRule::AimAttach,
+            5 => ProceduralRule::Jiggle,
+            v => ProceduralRule::Invalid(v), //panic!("Invalid procedural type {}", v),
+        };
 
         let physics_bone_index = cursor.read_i32::<LE>()?;
 

@@ -37,7 +37,7 @@ impl StudioBodyPart {
         let base = cursor.read_u32::<LE>()?;
         let model_index = cursor.read_u32::<LE>()?;
 
-        let mut models: Vec<StudioModel> = Vec::new();
+        let mut models = Vec::<StudioModel>::with_capacity(num_models as usize);
 
         for i in 0..num_models {
             // read shit?

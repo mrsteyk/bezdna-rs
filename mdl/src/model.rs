@@ -84,7 +84,7 @@ impl StudioModel {
         let v6 = cursor.read_u32::<LE>()?;
         let v7 = cursor.read_u32::<LE>()?;
 
-        let mut meshes: Vec<StudioMesh> = Vec::new();
+        let mut meshes = Vec::<StudioMesh>::with_capacity(mesh_num as usize);
         for i in 0..mesh_num {
             cursor.seek(SeekFrom::Start(
                 start_reading + mesh_index as u64 + (0x74 * i) as u64,

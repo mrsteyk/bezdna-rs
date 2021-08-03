@@ -1,4 +1,4 @@
-type DescType = (u32, i32);
+pub type DescType = (u32, i32);
 
 // repr(C) will allow for easier reading in the future hopefully...
 #[repr(C)]
