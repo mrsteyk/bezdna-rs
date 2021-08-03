@@ -23,6 +23,17 @@ struct MaterialJson<'a> {
     ao: String,
     cav: String,
     opa: String, // or trans???
+
+    // UNK14
+    decal_col: String,
+    illum2: String,
+    
+    // >=UNK15
+    decal_normal: String, // 15
+    decal_mask: String, // 16
+    material_postprocessing: String,
+    distort_normal: String,
+    distort_normal2: String,
 }
 
 fn main() {
@@ -237,11 +248,7 @@ fn main() {
                                     );
 
                                     std::fs::write(
-                                        material_out_path.join(format!(
-                                            "{}/{}.dds",
-                                            folder_str,
-                                            tf2::filetypes::matl::TEXTURE_REFS_SE2[i]
-                                        )),
+                                        material_out_path.join(prefix_file(&tf2_mat.texture_guids, folder_str, i)),
                                         data,
                                     )
                                     .unwrap();
@@ -313,11 +320,7 @@ fn main() {
                                     };
 
                                     std::fs::write(
-                                        material_out_path.join(format!(
-                                            "{}/{}.dds",
-                                            folder_str,
-                                            tf2::filetypes::matl::TEXTURE_REFS_SE2[i]
-                                        )),
+                                        material_out_path.join(prefix_file(&tf2_mat.texture_guids, folder_str, i)),
                                         data,
                                     )
                                     .unwrap();
@@ -333,12 +336,7 @@ fn main() {
                                 }
                                 let guid = tf2_mat.texture_guids[i];
                                 if let Some(txtr) = files.iter().find(|x| x.get_guid() == guid) {
-                                    return format!(
-                                        "{}/{}.dds",
-                                        folder_str,
-                                        tf2::filetypes::matl::TEXTURE_REFS_SE2[i]
-                                    )
-                                    .to_owned(); //txtr.get_name().unwrap().replace("\\", "/");
+                                    return prefix_file(&tf2_mat.texture_guids, folder_str, i); //txtr.get_name().unwrap().replace("\\", "/");
                                 } else {
                                     if common_rpak.is_none() {
                                         return "".to_owned();
@@ -350,12 +348,7 @@ fn main() {
                                         .iter()
                                         .find(|x| x.get_guid() == guid)
                                     {
-                                        return format!(
-                                            "{}/{}.dds",
-                                            folder_str,
-                                            tf2::filetypes::matl::TEXTURE_REFS_SE2[i]
-                                        )
-                                        .to_owned();
+                                        return prefix_file(&tf2_mat.texture_guids, folder_str, i);
                                     } else {
                                         return "".to_owned();
                                     }
@@ -375,6 +368,19 @@ fn main() {
                             let cav = find_texture(12);
                             let opa = find_texture(13);
 
+                            // UNK14
+                            let (decal_col, illum2) = if ((tf2_mat.texture_guids.len() > 14) && tf2_mat.texture_guids[15] != 0) || ((tf2_mat.texture_guids.len() > 15) && tf2_mat.texture_guids[16] != 0) {
+                                (find_texture(14), "".to_owned())
+                            } else {
+                                ("".to_owned(), find_texture(14))
+                            };
+
+                            let decal_normal = find_texture(15);
+                            let decal_mask = find_texture(16);
+                            let material_postprocessing = find_texture(17);
+                            let distort_normal = find_texture(18);
+                            let distort_normal2 = find_texture(19);
+
                             let matjs = MaterialJson {
                                 surface_properties: &tf2_mat.surface_props,
 
@@ -387,6 +393,15 @@ fn main() {
                                 ao,
                                 cav,
                                 opa,
+
+                                decal_col,
+                                illum2,
+
+                                decal_normal,
+                                decal_mask,
+                                material_postprocessing,
+                                distort_normal,
+                                distort_normal2,
                             };
                             let mat_serial = serde_json::to_string_pretty(&matjs).unwrap();
                             std::fs::write(material_json_path, mat_serial).unwrap();
@@ -808,6 +823,17 @@ fn main() {
                                 ao,
                                 cav,
                                 opa,
+
+                                // UNK14
+                                decal_col: "".to_owned(),
+                                illum2: "".to_owned(),
+                                
+                                // >=UNK15
+                                decal_normal: "".to_owned(), // 15
+                                decal_mask: "".to_owned(), // 16
+                                material_postprocessing: "".to_owned(),
+                                distort_normal: "".to_owned(),
+                                distort_normal2: "".to_owned(),
                             };
                             let mat_serial = serde_json::to_string_pretty(&matjs).unwrap();
                             std::fs::write(material_json_path, mat_serial).unwrap();
@@ -820,4 +846,20 @@ fn main() {
             }
         }
     }
+}
+
+fn prefix_file(guids: &Vec<u64>, folder_str: &str, i: usize) -> String {
+    format!(
+        "{}/{}.dds",
+        folder_str,
+        if i == 14 {
+            if ((guids.len()>14) && guids[15] != 0) || ((guids.len()>15) && guids[16] != 0) {
+                "_decal_col"
+            } else {
+                "_ilm2"
+            }
+        } else {
+            tf2::filetypes::matl::TEXTURE_REFS_SE2[i]
+        }
+    )
 }

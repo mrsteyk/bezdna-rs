@@ -14,6 +14,9 @@ pub const TEXTURE_REFS: [&str; 14] = [
 // UNK17 - distortion AO???
 // UNK18 - distortion normal
 
+// UNK18 = refraction (effects\cloud_refract_01.A716488B638D3F3F.txtr 256x256)
+// UNK19 = refraction 2?
+
 /*
 // wat de fuq they r doin' ova dere
 if UNK15 or UNK16:
@@ -22,7 +25,7 @@ else:
     UNK14 = illum
 */
 
-pub const TEXTURE_REFS_SE2: [&str; 14] = [
+pub const TEXTURE_REFS_SE2: [&str; 20] = [
     "_color",  // Material Editor 2
     "_normal", // Material Editor 2
     "_rough",  // S&Box wiki
@@ -31,6 +34,12 @@ pub const TEXTURE_REFS_SE2: [&str; 14] = [
     "UNK9", "UNK10", "_ao",    // Material Editor 2
     "_cav",   // Metallicness?
     "_trans", // is trans correct? (based on the _opa meaning opacity for ?"decals"?) Quote: `transparency / translucency map`
+    "_decal_col_ilm", // UNK14, temp
+    "_decal_normal", // UNK15
+    "_decal_mask", // UNK16
+    "_mat_pp", // UNK17
+    "_distort_normal", // UNK18
+    "_distort_normal2", // UNK19
 ];
 
 #[derive(Debug)]
